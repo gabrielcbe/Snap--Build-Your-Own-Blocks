@@ -1191,7 +1191,7 @@ ActionManager.prototype._getCustomBlockEditor = function(blockId) {
 
 ActionManager.prototype.getBlockFromId = function(id) {
     var ids = id.split('/'),
-        blockId = ids.shift(),
+        blockId = ids[0],
         block = this._blocks[blockId],
         editor = block.parentThatIsA(BlockEditorMorph),
         customBlockId;
@@ -1235,7 +1235,7 @@ ActionManager.prototype.getBlockFromId = function(id) {
         }
     }
 
-    for (var i = 0; i < ids.length; i++) {
+    for (var i = 1; i < ids.length; i++) {
         if (ids[i]) {
             block = block.inputs()[ids[i]];
         }
