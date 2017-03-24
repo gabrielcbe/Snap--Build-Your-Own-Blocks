@@ -8918,14 +8918,18 @@ ReplayControls.prototype.displayCaption = function(action, originalEvent) {
         intervalHandle,
         menu;
 
-    // TODO: add the user, too
-    message = action.type;
-    if (action.replayType === UndoManager.UNDO) {
-        // Get the originalEvent
+    if (ReplayControls.prettyPrint[originalEvent.type]) {
+        message = ReplayControls.prettyPrint[originalEvent.type].call(this, originalEvent);
+    } else {
+        message = action.type;
         if (originalEvent === action) {  // going forwards
             originalEvent = this.getInverseEvent(action);
         }
-        message = originalEvent.type + ' (undo)';
+        message = originalEvent.type;
+    }
+
+    if (action.replayType === UndoManager.UNDO) {
+        message += ' (undo)';
     } else if (action.replayType === UndoManager.REDO) {
         message += ' (redo)';
     }
@@ -9281,4 +9285,31 @@ ReplayControls.prototype.getInverseEvent = function(event) {
             }
         }
     }
+};
+
+ReplayControls.prettyPrint = {};
+ReplayControls.prettyPrint.setStageSize = function(event) {
+    var width = event.args[0],
+        height = event.args[1];
+
+    return localize('setting stage size to ') + width + ' x ' + height;
+};
+
+ReplayControls.prettyPrint.addSound = function(event) {
+    console.log(event);
+    return localize('added sound') + ' "' + event.args[2] + '"';
+};
+
+ReplayControls.prettyPrint.renameSound = function(event) {
+    return localize('renamed sound from') + ' ' + event.args[2] + ' ' +
+        localize('to') + ' ' + event.args[0];
+};
+
+ReplayControls.prettyPrint.addBlock = function(event) {
+  var owner = SnapActions._owners[event.args[1]],
+    block = SnapActions.deserializeBlock(event.args[0]);
+
+    // TODO: Should I try to show the block?
+    return localize('added') + ' "' + block.selector + '" ' +
+        localize('block to') + '"' + owner.name + '"';
 };
