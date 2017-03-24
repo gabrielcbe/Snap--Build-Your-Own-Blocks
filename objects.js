@@ -8916,10 +8916,12 @@ ReplayControls.prototype.stepBackward = function() {
 ReplayControls.prototype.displayCaption = function(action, originalEvent) {
     var message, 
         intervalHandle,
+        regularEvent,
         menu;
 
-    if (ReplayControls.prettyPrint[originalEvent.type]) {
-        message = ReplayControls.prettyPrint[originalEvent.type].call(this, originalEvent);
+    regularEvent = action.replayType === UndoManager.UNDO ? originalEvent : action;
+    if (ReplayControls.prettyPrint[regularEvent.type]) {
+        message = ReplayControls.prettyPrint[regularEvent.type].call(this, regularEvent);
     } else {
         message = action.type;
         if (originalEvent === action) {  // going forwards
@@ -8946,7 +8948,7 @@ ReplayControls.prototype.displayCaption = function(action, originalEvent) {
     }
 
     menu.drawNew();
-    menu.setPosition(pos);
+    menu.setCenter(pos);
     menu.addShadow(new Point(2, 2), 80);
     menu.keepWithin(world);
     world.add(menu);
@@ -9296,18 +9298,33 @@ ReplayControls.prettyPrint.setStageSize = function(event) {
 };
 
 ReplayControls.prettyPrint.addSound = function(event) {
-    console.log(event);
-    return localize('added sound') + ' "' + event.args[2] + '"';
+    var owner = SnapActions._owners[event.args[1]],
+        sound = SnapActions.serializer.loadValue(
+            SnapActions.serializer.parse(event.args[0])
+        );
+
+    return localize('added') + ' "' + sound.name + '" ' + localize('sound to') +
+        ' "' + owner.name + '"';
 };
 
 ReplayControls.prettyPrint.renameSound = function(event) {
-    return localize('renamed sound from') + ' ' + event.args[2] + ' ' +
-        localize('to') + ' ' + event.args[0];
+    var owner = SnapActions._soundToOwner[event.args[0]];
+
+    return localize('renamed sound from') + ' "' + event.args[2] + '" ' +
+        localize('to') + ' "' + event.args[1] + '" ' + localize('in') + owner.name;
+};
+
+ReplayControls.prettyPrint.removeSound = function(event) {
+    var owner = SnapActions._owners[event.args[2]],
+        sound = SnapActions.serializer.loadValue(SnapActions.serializer.parse(event.args[1]));
+
+    return localize('deleted sound ') + ' "' + sound.name + '" ' +
+        localize('from') + ' "' + owner.name + '"';
 };
 
 ReplayControls.prettyPrint.addBlock = function(event) {
-  var owner = SnapActions._owners[event.args[1]],
-    block = SnapActions.deserializeBlock(event.args[0]);
+    var owner = SnapActions._owners[event.args[1]],
+        block = SnapActions.deserializeBlock(event.args[0]);
 
     // TODO: Should I try to show the block?
     return localize('added') + ' "' + block.selector + '" ' +
