@@ -2111,7 +2111,7 @@ ActionManager.prototype.onAddSprite = function(serialized, creatorId) {
     var ide = this.ide(),
         sprites;
 
-    sprites = this.serializer.loadSprites(serialized, ide);
+    sprites = this.ide().rawOpenSpritesString(serialized);
     if (creatorId === this.id) {
         ide.selectSprite(sprites[sprites.length-1]);
     }
@@ -2480,14 +2480,6 @@ ActionManager.prototype.loadOwner = function(owner) {
     var myself = this;
 
     this.registerOwner(owner, owner.id);
-
-    // Load the blocks from scripts
-    owner.scripts.children.forEach(function(topBlock) {  // id the blocks
-        myself.traverse(topBlock, function(block) {
-            myself.__assignUniqueBlockId(block, true);
-            myself._blocks[block.id] = block;
-        });
-    });
 
     owner.scripts.children.forEach(function(block) {
         myself.registerBlocks(block, owner);

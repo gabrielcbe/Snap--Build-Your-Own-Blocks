@@ -4422,15 +4422,17 @@ IDE_Morph.prototype.openSpritesString = function (str) {
 };
 
 IDE_Morph.prototype.rawOpenSpritesString = function (str) {
+    var sprites = null;
     if (Process.prototype.isCatchingErrors) {
         try {
-            this.serializer.loadSprites(str, this);
+            sprites = this.serializer.loadSprites(str, this);
         } catch (err) {
             this.showMessage('Load failed: ' + err);
         }
     } else {
-        this.serializer.loadSprites(str, this);
+        sprites = this.serializer.loadSprites(str, this);
     }
+    return sprites;
 };
 
 IDE_Morph.prototype.openMediaString = function (str) {
