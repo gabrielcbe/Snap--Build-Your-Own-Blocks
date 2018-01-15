@@ -2,6 +2,7 @@
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="viewport" content="">
         <title>NetsBlox</title>
         <link rel="shortcut icon" href="favicon.ico">
         <script type="text/javascript" src="polyfill.js"></script>
@@ -24,6 +25,7 @@
         <script type="text/javascript" src="actions.js"></script>
         <script type="text/javascript" src="undo.js"></script>
         <script type="text/javascript" src="FileSaver.min.js"></script>
+        <script type="text/javascript" src="vue.js"></script>
         <script type="text/javascript" src="message-inputs.js"></script>
         <script type="text/javascript" src="message-listeners.js"></script>
 
@@ -43,6 +45,7 @@
         <script type="text/javascript" src="store-ext.js"></script>
         <script type="text/javascript" src="actions-ext.js"></script>
 
+
 		<script type="text/javascript">
 			var world;
 			window.onload = function () {
@@ -58,7 +61,33 @@
 		</script>
     </head>
     <body style="margin: 0;">
-        <canvas id="world" tabindex="1" style="position: absolute;" ></canvas>
+        <canvas id="world" tabindex="1" style="position: absolute;"></canvas>
+        <div id="mobile">
+            <button>evict</button>	
+            <button>invite</button>	
+            <button>move</button>	
+            <button v-on:click="updateRoles()">update roles</button>	
+            <button v-on:click="updateFriendList()">update friends</button>	
+            <button v-on:click="showSnap()">back to snap</button>
+            <h3>roles:</h3>
+            <ul>
+                <li v-for="role in roles">
+                    {{ role.name }}: {{ listUsers(role) }}
+                    <!-- <li v-for="user in role.users"> -->
+                    <!--     {{ user.username }} --> 
+                    <!-- </li> -->
+                    <button v-on:click="moveToRole(role.name)">move to</button>
+                    <button v-on:click="invite('myself', role.name)">invite myself</button>
+                </li>
+            </ul>
+            <h3>friends:</h3>
+            <ul>
+                <li v-for="friend in friends">
+                    {{ friend }}	
+                </li>
+            </ul>
+        </div>
+        <script type="text/javascript" src="mobile.js"></script>
     </body>
 </html>
 
