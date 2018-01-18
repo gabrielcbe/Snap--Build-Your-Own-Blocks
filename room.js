@@ -1512,7 +1512,7 @@ RoomEditorMorph.prototype.init = function(room, sliderColor) {
     this.add(this.palette);
 
     this.room = room;
-    this.add(room);
+    this.addContents(room);
 
     // Check for queried shared messages
     this.room.checkForSharedMsgs(this.room.getCurrentRoleName());
@@ -1658,11 +1658,12 @@ RoomEditorMorph.prototype.addToggleReplay = function() {
 
 RoomEditorMorph.prototype.fixLayout = function() {
     var controlsHeight = 80,
-        roomSize = this.extent();
+        roomSize = this.extent().max(new Point(300, 300));
 
     roomSize.y = roomSize.y - (controlsHeight + 35);
     this.room.setExtent(roomSize);
-    this.room.setCenter(this.center().subtract(controlsHeight/2));
+    // TODO: position the room at the top
+    //this.room.setCenter(this.center().subtract(controlsHeight/2));
     this.room.fixLayout();
 
     this.updateMsgPalette();
