@@ -4336,7 +4336,7 @@ IDE_Morph.prototype.toggleAppMode = function (appMode) {
     }
     this.setExtent(this.world().extent()); // resume trackChanges
     // check for mobilemode
-    if (this.isMobileDevice()) {
+    if (this.isMobileDevice() && this.isAppMode) {
         this.mobileMode.init();
     }
 
