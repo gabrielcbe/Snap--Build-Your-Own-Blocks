@@ -2366,6 +2366,22 @@ Context.prototype.toXML = function (serializer) {
         return '';
     }
 
+    var variables;
+    if (serializer.isSavingPortable && this.variables) {
+        // Save all the variables from the frames up until the sprite/stage
+        var serializedFrames = [],
+            frame = this.variables;
+
+        while (!frame.owner) {
+            serializedFrames.push(serializer.store(this.variables));
+            frame = frame.parentFrame;
+        }
+
+        variables = serializedFrames.join('');
+    } else {
+        variables = this.variables ? serializer.store(this.variables) : '';
+    }
+
     return serializer.format(
         '<context ~><inputs>%</inputs><variables>%</variables>' +
             '%<receiver>%</receiver>%</context>',
@@ -2375,7 +2391,7 @@ Context.prototype.toXML = function (serializer) {
                 },
                 ''
             ),
-        this.variables ? serializer.store(this.variables) : '',
+        variables,
         this.expression ? serializer.store(this.expression) : '',
         this.receiver ? serializer.store(this.receiver) : '',
         this.outerContext ? serializer.store(this.outerContext) : ''
