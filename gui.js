@@ -5159,7 +5159,15 @@ IDE_Morph.prototype.mobileMode = {
     // assuming top pos for horizontal alignment and right for vertical
     _stackMode: '', // stack controls horizontally or vertically
     buttons: [],
-    buttonsGap: 50,
+    btnConfig: {
+        idealSize: 60, // symbol + padding(inner)
+        SBRatio: 0.5, // symbol to button(size) ratio
+        GBRatio: 0.3, // gap to button ratio
+        symbolSize: undefined,
+        padding: undefined,
+        size: undefined, // cur size
+        gap: undefined,
+    },
     ideMorph: undefined, // TODO replace me
 };
 
@@ -5167,17 +5175,41 @@ IDE_Morph.prototype.mobileMode = {
 IDE_Morph.prototype.mobileMode.init = function() {
     this.ideMorph = world.children[0];
     this.hideExtra();
+    this.setBtnSize(this.btnConfig.idealSize);
     this.fixLayout();
 };
 
+IDE_Morph.prototype.mobileMode.updateBtnConfig = function() {
+    // compute btn sizes
+    this.btnConfig.gap = this.btnConfig.size * this.btnConfig.GBRatio;
+    this.btnConfig.symbolSize = this.btnConfig.size * this.btnConfig.SBRatio;
+    this.btnConfig.padding = this.btnConfig.size * (1 - this.btnConfig.SBRatio);
+};
+
+// permanently change the btn size or
+// temporarily set the btn size for current fixlayout
+IDE_Morph.prototype.mobileMode.setBtnSize = function(newSize, temp=true) {
+    if (!temp) this.btnConfig.idealSize = newSize;
+    this.btnConfig.size = newSize;
+    this.updateBtnConfig();
+};
+
+// resets to the idealsize
+IDE_Morph.prototype.mobileMode.resetBtnSize = function() {
+    this.btnConfig.size = this.btnConfig.idealSize;
+    this.updateBtnConfig();
+};
+
 IDE_Morph.prototype.mobileMode.fixLayout = function() {
-    var SYMBOL_SIZE = 40; // buttons symbol size
     var prevStackMode = this._stackMode;
     var spaces = this.emptySpaces();
     var optRect = this.optimalRectangle(spaces);
     // keep the button sizes consistent in landscape and portrait mode
-    if (prevStackMode === 'h' && this._stackMode === 'v') SYMBOL_SIZE /= 2; 
-    this.buttons = this.createButtons(SYMBOL_SIZE);
+    if (prevStackMode === 'h' && this._stackMode === 'v') {
+        var newSize = this.btnConfig.size * 0.6;
+        this.setBtnSize(newSize);
+    }
+    this.buttons = this.createButtons();
     // compute wrapper box details for the buttons
     var targetBox = this.computeControlPos(optRect);
     this.positionButtons(this.buttons, targetBox);
@@ -5203,6 +5235,7 @@ IDE_Morph.prototype.mobileMode.emptySpaces = function() {
 
 IDE_Morph.prototype.mobileMode.optimalRectangle = function(spaces) {
     // assuming stage is centered
+    //  => just looking at top or right side of the stage
     // WARN stage could fill up the whole window
     var bestSide,
         stage = world.children[0].stage;
@@ -5216,7 +5249,14 @@ IDE_Morph.prototype.mobileMode.optimalRectangle = function(spaces) {
 
     bestSide = (spaces.top > spaces.right) ? 'top' : 'right';
 
-    if (spaces[bestSide] < 50) throw new Error('no space on the sides.');
+    const sizeToPixelRatio = 2; // symbol size to pixel raito
+    if (spaces[bestSide] < this.btnConfig.size * sizeToPixelRatio) {
+        const optimalSize = (spaces[bestSide] /sizeToPixelRatio) - 10;
+        if (optimalSize < 10) throw new Error('no space on the sides.');
+        this.setBtnSize(optimalSize);
+    } else {
+        this.resetBtnSize(); // set it back to ideal
+    }
     switch(bestSide) {
     case 'right':
         rect.bottomLeft.x = stage.bounds.corner.x;
@@ -5248,7 +5288,7 @@ IDE_Morph.prototype.mobileMode.computeControlPos = function(targetRect) {
         // stack vertically
         controls = {
             origin: {},
-            height: numButtons * btnHeight + (numButtons-1) * this.buttonsGap,
+            height: numButtons * btnHeight + (numButtons-1) * this.btnConfig.gap,
             width: btnWidth,
         };
         controls.origin.y = (totalH - controls.height) / 2;
@@ -5258,7 +5298,7 @@ IDE_Morph.prototype.mobileMode.computeControlPos = function(targetRect) {
         //stack vertically
         controls = {
             origin: {},
-            width: numButtons * btnWidth + (numButtons-1) * this.buttonsGap,
+            width: numButtons * btnWidth + (numButtons-1) * this.btnConfig.gap,
             height: btnHeight,
         };
         controls.origin.x = (totalW - controls.width) / 2;
@@ -5267,8 +5307,7 @@ IDE_Morph.prototype.mobileMode.computeControlPos = function(targetRect) {
     return controls;
 };
 
-IDE_Morph.prototype.mobileMode.createButtons = function(symbolSize) {
-    var BTN_PAD = symbolSize * 0.8;
+IDE_Morph.prototype.mobileMode.createButtons = function() {
     var myself = this;
     var colors = [
         new Color(50, 50, 50),
@@ -5290,8 +5329,8 @@ IDE_Morph.prototype.mobileMode.createButtons = function(symbolSize) {
         this.ideMorph, // the IDE is the target
         'stopAllScripts',
         [
-            new SymbolMorph('octagon', symbolSize),
-            new SymbolMorph('square', symbolSize)
+            new SymbolMorph('octagon', myself.btnConfig.symbolSize),
+            new SymbolMorph('square', myself.btnConfig.symbolSize)
         ],
         function () {  // query
             return myself.ideMorph.stage ?
@@ -5305,7 +5344,7 @@ IDE_Morph.prototype.mobileMode.createButtons = function(symbolSize) {
     var startButton = new PushButtonMorph(
         this.ideMorph,
         'pressStart',
-        new SymbolMorph('flag', symbolSize)
+        new SymbolMorph('flag', myself.btnConfig.symbolSize)
     );
     startButton.labelColor = new Color(0, 200, 0);
 
@@ -5326,7 +5365,7 @@ IDE_Morph.prototype.mobileMode.createButtons = function(symbolSize) {
         btn.labelShadowOffset = new Point(-1, -1);
         btn.labelShadowColor = colors[1];
         btn.contrast = this.buttonContrast;
-        btn.padding = BTN_PAD;
+        btn.padding = myself.btnConfig.padding;
         // btn.setWidth(btnWidth);
         // btn.setHeight(BUTTON_SIZE.height);
         // fix layout will shrink width to paddings
@@ -5348,10 +5387,10 @@ IDE_Morph.prototype.mobileMode.positionButtons = function(buttons, controls) {
         var x,y;
         if (myself._stackMode === 'v') {
             x = controls.origin.x;
-            y = controls.origin.y + idx * btnHeight + idx * myself.buttonsGap;
+            y = controls.origin.y + idx * btnHeight + idx * myself.btnConfig.gap;
         } else if (myself._stackMode === 'h') {
             y = controls.origin.y;
-            x = controls.origin.x + idx * btnWidth + idx * myself.buttonsGap;
+            x = controls.origin.x + idx * btnWidth + idx * myself.btnConfig.gap;
         }
         button.setPosition(new Point(x, y));
         button.show();
