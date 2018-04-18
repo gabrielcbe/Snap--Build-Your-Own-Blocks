@@ -377,6 +377,20 @@ NetsBloxMorph.prototype.projectMenu = function () {
         item;
 
     if (shiftClicked) {
+        // Check if we have opened a cloud project
+        // TODO
+
+        // Add option for viewing project archives
+        menu.items.splice(4, 0, [
+            localize('View previous project versions'),
+            function () {
+                console.log('Viewing previous project version');
+                new ProjectArchiveDialogMorph(myself).popUp(myself.world());
+            },
+            'Open a previously saved version of "' + myself.room.name + '"',
+            new Color(100, 0, 0)
+        ]);
+
         menu.items.splice(10, 0, [
             localize('Export role...'),
             function () {

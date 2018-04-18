@@ -255,3 +255,162 @@ IDE_Morph.prototype.rawOpenBlocksString = function (str, name, silently) {
 
     return this._rawOpenBlocksString(str, name, silently);
 };
+
+///////////////////////////// Project Archives /////////////////////////////
+ProjectArchiveDialogMorph.prototype = new DialogBoxMorph();
+ProjectArchiveDialogMorph.prototype.constructor = ProjectArchiveDialogMorph;
+ProjectArchiveDialogMorph.uber = DialogBoxMorph.prototype;
+
+// ProjectArchiveDialogMorph instance creation:
+
+function ProjectArchiveDialogMorph(ide) {
+    this.init(ide);
+}
+
+ProjectArchiveDialogMorph.prototype.init = function(ide) {
+    var myself = this,
+        projectName = ide.room.name;
+
+    // additional properties:
+    this.ide = ide;
+    this.projectList = []; // [{name: , thumb: , notes:}]
+
+    this.handle = null;
+    this.nameField = null;
+    this.listField = null;
+    this.preview = null;
+    this.notesText = null;
+    this.notesField = null;
+
+    // initialize inherited properties:
+    ProjectArchiveDialogMorph.uber.init.call(
+        this,
+        this, // target
+        null, // function
+        null // environment
+    );
+
+    // override inherited properites:
+    this.labelString = 'Previous Versions of ' + projectName;
+    this.createLabel();
+    this.key = 'viewArchives';
+
+    // build contents
+    this.buildContents();
+
+    //this.onNextStep = function () { // yield to show "updating" message
+        //myself.setSource(myself.source);
+    //};
+};
+
+ProjectArchiveDialogMorph.prototype.buildContents = function () {
+    var thumbnail, notification, baseSize = new Point(455, 335);
+
+    this.addBody(new Morph());
+    this.body.color = this.color;
+
+    this.listField = new ListMorph([]);
+    //this.fixListFieldItemColors();
+    this.listField.fixLayout = nop;
+    this.listField.edge = InputFieldMorph.prototype.edge;
+    this.listField.fontSize = InputFieldMorph.prototype.fontSize;
+    this.listField.typeInPadding = InputFieldMorph.prototype.typeInPadding;
+    this.listField.contrast = InputFieldMorph.prototype.contrast;
+    this.listField.drawNew = InputFieldMorph.prototype.drawNew;
+    this.listField.drawRectBorder = InputFieldMorph.prototype.drawRectBorder;
+
+    this.body.add(this.listField);
+
+    this.preview = new Morph();
+    this.preview.fixLayout = nop;
+    this.preview.edge = InputFieldMorph.prototype.edge;
+    this.preview.fontSize = InputFieldMorph.prototype.fontSize;
+    this.preview.typeInPadding = InputFieldMorph.prototype.typeInPadding;
+    this.preview.contrast = InputFieldMorph.prototype.contrast;
+    this.preview.drawNew = function () {
+        InputFieldMorph.prototype.drawNew.call(this);
+        if (this.texture) {
+            this.drawTexture(this.texture);
+        }
+    };
+    this.preview.drawCachedTexture = function () {
+        var context = this.image.getContext('2d');
+        var scale = Math.min(
+                (this.width() / this.cachedTexture.width),
+                (this.height() / this.cachedTexture.height)
+            ),
+            width = scale * this.cachedTexture.width,
+            height = scale * this.cachedTexture.height;
+
+        context.drawImage(this.cachedTexture, this.edge, this.edge,
+            width, height);
+
+        this.changed();
+    };
+    this.preview.drawRectBorder = InputFieldMorph.prototype.drawRectBorder;
+    this.preview.setExtent(
+        this.ide.serializer.thumbnailSize.divideBy(4).add(this.preview.edge * 2)
+    );
+
+    this.body.add(this.preview);
+    this.preview.drawNew();
+
+    this.notesField = new ScrollFrameMorph();
+    this.notesField.fixLayout = nop;
+
+    this.notesField.edge = InputFieldMorph.prototype.edge;
+    this.notesField.fontSize = InputFieldMorph.prototype.fontSize;
+    this.notesField.typeInPadding = InputFieldMorph.prototype.typeInPadding;
+    this.notesField.contrast = InputFieldMorph.prototype.contrast;
+    this.notesField.drawNew = InputFieldMorph.prototype.drawNew;
+    this.notesField.drawRectBorder = InputFieldMorph.prototype.drawRectBorder;
+
+    this.notesField.acceptsDrops = false;
+    this.notesField.contents.acceptsDrops = false;
+
+    this.notesText = new TextMorph('');
+
+    this.notesField.isTextLineWrapping = true;
+    this.notesField.padding = 3;
+    this.notesField.setContents(this.notesText);
+    this.notesField.setWidth(this.preview.width());
+
+    this.body.add(this.notesField);
+
+    if (this.task === 'open') {
+        this.addButton('openProject', 'Open');
+        this.action = 'openProject';
+    }
+    this.addButton('cancel', 'Cancel');
+
+    this.setExtent(baseSize);
+    this.fixLayout();
+    this.drawNew();
+};
+
+ProjectArchiveDialogMorph.prototype.openProject = function () {
+    console.log('opening project...');
+    return;
+    var proj = this.listField.selected,
+        src;
+    if (!proj) {return; }
+    this.ide.source = this.source;
+    if (this.source === 'cloud') {
+        this.openCloudProject(proj);
+    } else if (this.source === 'examples') {
+        // Note "file" is a property of the parseResourceFile function.
+        src = this.ide.getURL(this.ide.resourceURL('Examples', proj.fileName));
+        SnapActions.disableCollaboration();
+        SnapUndo.reset();
+        this.ide.openProjectString(src);
+        this.destroy();
+    } else { // 'local'
+        this.ide.openProject(proj.name);
+        this.destroy();
+    }
+};
+
+ProjectArchiveDialogMorph.prototype.popUp = function () {
+    console.log('popping up...');
+    return ProjectArchiveDialogMorph.uber.popUp.apply(this, arguments);
+};
