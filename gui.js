@@ -5160,7 +5160,7 @@ IDE_Morph.prototype.mobileMode = {
     _stackMode: '', // stack controls horizontally or vertically
     buttons: [],
     btnConfig: {
-        idealSize: 60, // symbol + padding(inner)
+        idealSize: 30, // symbol + padding(inner)
         SBRatio: 0.5, // symbol to button(size) ratio
         GBRatio: 0.3, // gap to button ratio
         symbolSize: undefined,
@@ -5175,6 +5175,8 @@ IDE_Morph.prototype.mobileMode = {
 IDE_Morph.prototype.mobileMode.init = function() {
     this.ideMorph = world.children[0];
     this.hideExtra();
+    var screenPixelRatio = window.innerHeight / window.outerHeight;
+    this.btnConfig.idealSize = this.btnConfig.idealSize * screenPixelRatio;
     this.setBtnSize(this.btnConfig.idealSize);
     this.fixLayout();
 };
