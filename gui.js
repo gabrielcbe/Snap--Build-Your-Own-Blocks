@@ -1570,11 +1570,19 @@ IDE_Morph.prototype.fixLayout = function (situation) {
     if (situation !== 'refreshPalette') {
         // stage
         if (this.isAppMode) {
-            this.stage.setScale(Math.floor(Math.min(
-                (this.width() - padding * 2) / this.stage.dimensions.x,
-                (this.height() - this.controlBar.height() * 2 - padding * 2)
-                    / this.stage.dimensions.y
-            ) * 10) / 10);
+            var optimalScale;
+            if (this.isMobileDevice()) {
+                var widthScale = (this.width() - padding * 2) / this.stage.dimensions.x;
+                var heightScale = (this.height() - padding * 2) / this.stage.dimensions.y;
+                optimalScale = Math.floor(Math.min(widthScale, heightScale) * 1000) / 1000;
+            } else {
+                optimalScale = Math.floor(Math.min(
+                    (this.width() - padding * 2) / this.stage.dimensions.x,
+                    (this.height() - this.controlBar.height() * 2 - padding * 2)
+                        / this.stage.dimensions.y
+                ) * 10) / 10;
+            }
+            this.stage.setScale(optimalScale);
             this.stage.setCenter(this.center());
         } else {
             this.stage.setScale(this.isSmallStage ? this.stageRatio : 1);
@@ -1654,9 +1662,13 @@ IDE_Morph.prototype.setExtent = function (point) {
 
     // determine the minimum dimensions making sense for the current mode
     if (this.isAppMode) {
-        minExt = StageMorph.prototype.dimensions.add(
-            this.controlBar.height() + 10
-        );
+        if (this.isMobileDevice()) {
+            minExt = {x: 10, y: 10}; // min dimensions
+        } else {
+            minExt = StageMorph.prototype.dimensions.add(
+                this.controlBar.height() + 10
+            );
+        }
     } else {
         if (this.stageRatio > 1) {
             minExt = padding.add(StageMorph.prototype.dimensions);
@@ -5203,6 +5215,7 @@ IDE_Morph.prototype.mobileMode.resetBtnSize = function() {
 };
 
 IDE_Morph.prototype.mobileMode.fixLayout = function() {
+    this.ideMorph.controlBar.setHeight(0);
     var prevStackMode = this._stackMode;
     var spaces = this.emptySpaces();
     var optRect = this.optimalRectangle(spaces);
