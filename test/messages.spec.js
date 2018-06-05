@@ -1,4 +1,5 @@
-/* globals expect, driver, SnapActions, MessageCreatorMorph, PushButtonMorph */
+/* globals expect, driver, SnapActions, MessageCreatorMorph, PushButtonMorph,
+   CustomBlockDefinition*/
 describe('messages', function() {
 
     describe('message type', function() {
@@ -30,6 +31,49 @@ describe('messages', function() {
 
                 expect(!!btn).toBe(true);
             });
+        });
+
+    });
+
+    describe('unused msg types', function() {
+        const usedMsgType = 'usedMsgType';
+        const unusedMsgType = 'unusedMsgType';
+        let unusedMsgs = null;
+        before(function() {
+            return SnapActions.addMessageType(usedMsgType)
+                .then(() => SnapActions.addMessageType(unusedMsgType))
+                .then(() => driver.addBlock('receiveSocketMessage'))
+                .then(block => {
+                    driver.click(block.inputs()[0]);
+                    const dialog = driver.dialog();
+                    driver.click(dialog.children.find(c => c.labelString === usedMsgType));
+
+                    // Create a custom block
+                    const sprite = driver.ide().currentSprite;
+                    const spec = 'sprite block %s';
+                    const definition = new CustomBlockDefinition(spec, sprite);
+
+                    definition.category = 'motion';
+                    return SnapActions.addCustomBlock(definition, sprite);
+                })
+                .then(() => {
+                    const projectBtn = driver.ide().controlBar.projectButton;
+                    driver.click(projectBtn);
+
+                    // Open the dialog to remove unused blocks/msgs
+                    const dialog = driver.dialog();
+                    driver.click(dialog.children.find(c => c.action === 'exportGlobalBlocks'));
+                    const exportDialog = driver.dialog();
+                    unusedMsgs = exportDialog.msgs.map(msg => msg.blockSpec);
+                });
+        });
+
+        it('should not detect used msgs', function() {
+            expect(unusedMsgs.includes(usedMsgType)).toBeFalsy();
+        });
+
+        it('should detect unused msgs', function() {
+            expect(unusedMsgs.includes(unusedMsgType)).toBeTruthy();
         });
     });
 });
