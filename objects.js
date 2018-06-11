@@ -2024,6 +2024,11 @@ SpriteMorph.prototype.blockTemplates = function (category) {
         blocks.push(block('getTimer'));
         blocks.push('-');
         blocks.push(block('reportAttributeOf'));
+        blocks.push('-');
+        blocks.push(block('agentInit'));
+        blocks.push(block('agentPickAction'));
+        blocks.push(block('agentReplay'));
+
 
         if (SpriteMorph.prototype.enableFirstClass) {
             blocks.push(block('reportGet'));

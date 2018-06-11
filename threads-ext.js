@@ -445,3 +445,17 @@ NetsProcess.prototype.reportStageHeight = function () {
     var stage = this.homeContext.receiver.parentThatIsA(StageMorph);
     return stage.dimensions.y;
 };
+
+// RL blocks
+
+NetsProcess.prototype.agentReplay = function () {
+    return 'ok';
+};
+
+NetsProcess.prototype.agentPickAction = function (state) {
+    return 'ok';
+};
+
+NetsProcess.prototype.agentInit = function (actionSize, stateSize) {
+    return 'ok';
+};
