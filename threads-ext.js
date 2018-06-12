@@ -1,5 +1,5 @@
 /* global ThreadManager, ensureFullUrl, Process, Context, IDE_Morph, Costume, StageMorph,
-   List, SnapActions, isObject, newCanvas, Point */
+   List, SnapActions, isObject, newCanvas, Point, Agent */
 
 // NetsProcess Overrides
 NetsProcess.prototype = new Process();
@@ -480,16 +480,52 @@ NetsProcess.prototype.runAsyncFn = function (id, asyncFn, args) {
     this.pushContext();
 };
 
-// RL blocks
+// Reinforcement learning blocks
 
-NetsProcess.prototype.agentReplay = function () {
-    return 'ok';
+let rlAgents = {};
+
+NetsProcess.prototype.agentReplay = function (name, memories) {
+    let agent = rlAgents[name];
+    if (!agent) throw new Error(`couldn't find the agent.`);
+    if (!this._memories) { // need to deep convert the memories into a js array
+        // make a deep copy OPT
+        let memListPt = memories.asArray();
+        let aMemories = [];
+        for(let i=0; i < memListPt.length; i++) {
+            let memory = memListPt[i].asArray();
+            let aMemory = new Array(5);
+            aMemory[0] = memory[0].asArray().map(parseFloat); // cur state
+            aMemory[1] = parseFloat(memory[1]);
+            aMemory[2] = parseFloat(memory[2]);
+            aMemory[3] = memory[3].asArray().map(parseFloat);
+            aMemory[4] = memory[4];
+            aMemories.push(aMemory);
+        }
+        // TODO validate memories?
+        this._memories = aMemories;
+    }
+    let res = this.runAsyncFn('agentReplayWait', agent.replay.bind(agent), [this._memories]);
+    if (res !== undefined) return res;
 };
 
-NetsProcess.prototype.agentPickAction = function (state) {
-    return 'ok';
+NetsProcess.prototype.agentPickAction = function (name, state) {
+    let agent = rlAgents[name];
+    if (!agent) throw new Error(`couldn't find the agent.`);
+    // TODO validate state
+    state = state.asArray().map(it => parseFloat(it));
+    let res = this.runAsyncFn('agentPickAction', agent.act.bind(agent), [state]);
+    if (res !== undefined) return res;
 };
 
-NetsProcess.prototype.agentInit = function (actionSize, stateSize) {
-    return 'ok';
+// resets or sets(initializes) the agent
+NetsProcess.prototype.agentCreate = function (name, actionSize, stateSize) {
+    // TODO validate
+    // remove non alphanum chars
+    let cleanName = name.replace(/[^a-z0-9]/gmi, '').replace(/\s+/g, '');
+    actionSize = parseInt(actionSize);
+    stateSize = parseInt(stateSize);
+
+    // setup the agent with defaults and inputs
+    rlAgents[cleanName] = new Agent({actionSize: actionSize, stateSize: stateSize, epsilon: 0, batchSize: 4});
+    console.log('created agent', cleanName);
 };
