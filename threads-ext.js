@@ -446,6 +446,40 @@ NetsProcess.prototype.reportStageHeight = function () {
     return stage.dimensions.y;
 };
 
+// temp async helper
+// when calling this function, return only if the return value is not undefined.
+NetsProcess.prototype.runAsyncFn = function (id, asyncFn, args) {
+    id = '_async' + id; // make sure id doesn't collide with process methods
+    if (!id || !(asyncFn instanceof Function)) throw new Error('id or asyncFn input missing');
+    if (!this[id]) {
+        this[id] = {};
+        let promise = asyncFn.apply(this, args)
+            .then(r => {
+                this[id].complete = true;
+                this[id].response = r;
+            })
+            .catch(e => {
+                this[id].error = true;
+                this[id].response = e;
+            });
+        this[id].onerror = function(event) {
+            this[id].error = event;
+        };
+        this[id].promise = promise;
+    } else if (this[id].complete) {
+        // Clear request
+        let tmp = this[id];
+        this[id] = null;
+        return tmp.response;
+    } else if (this[id].error) {
+        let tmp = this[id];
+        this[id] = null;
+        throw Error(tmp.response);
+    }
+    this.pushContext('doYield');
+    this.pushContext();
+};
+
 // RL blocks
 
 NetsProcess.prototype.agentReplay = function () {
