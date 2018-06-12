@@ -2025,7 +2025,7 @@ SpriteMorph.prototype.blockTemplates = function (category) {
         blocks.push('-');
         blocks.push(block('reportAttributeOf'));
         blocks.push('-');
-        blocks.push(block('agentInit'));
+        blocks.push(block('agentCreate'));
         blocks.push(block('agentPickAction'));
         blocks.push(block('agentReplay'));
 
@@ -9133,7 +9133,7 @@ ReplayControls.prototype.stepBackward = function() {
 };
 
 ReplayControls.prototype.displayCaption = function(action, originalEvent) {
-    var message, 
+    var message,
         intervalHandle,
         menu;
 
@@ -9501,7 +9501,7 @@ ReplayControls.prototype.getColorForTick = function(/*action*/) {
     return null;  // use the default
 };
 
-// apply any actions between 
+// apply any actions between
 ReplayControls.prototype.update = function() {
     var myself = this,
         originalEvent,

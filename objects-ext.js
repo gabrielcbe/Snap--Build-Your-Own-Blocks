@@ -124,22 +124,22 @@ SpriteMorph.prototype.initBlocks = function () {
     };
 
     // ML blocks
-    SpriteMorph.prototype.blocks.agentInit = {
+    SpriteMorph.prototype.blocks.agentCreate = {
         type: 'command',
         category: 'sensing',
-        spec: 'create agent with action size %n state size %n'
+        spec: 'create agent %s with action size %n state size %n'
     };
 
     SpriteMorph.prototype.blocks.agentPickAction = {
         type: 'reporter',
         category: 'sensing',
-        spec: 'pick action given %l'
+        spec: 'agent %s pick action given %l'
     };
 
     SpriteMorph.prototype.blocks.agentReplay = {
         type: 'command',
         category: 'sensing',
-        spec: 'exercise with memories %l'
+        spec: 'agent %s replay memories %l'
     };
 
 
