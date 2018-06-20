@@ -98,6 +98,7 @@ class Agent {
   async save(location) {
     print('saving model..', location);
     const saveResults = await this.model.save(location);
+		return saveResults;
   }
 
   async load(location) {

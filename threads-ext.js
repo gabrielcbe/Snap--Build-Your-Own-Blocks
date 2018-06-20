@@ -449,8 +449,8 @@ NetsProcess.prototype.reportStageHeight = function () {
 
 // temp async helper
 // when calling this function, return only if the return value is not undefined.
-NetsProcess.prototype.runAsyncFn = function (id, asyncFn, args) {
-    id = '_async' + id; // make sure id doesn't collide with process methods
+NetsProcess.prototype.runAsyncFn = function (asyncFn, args) {
+    id = '_async' + 'Function'; // make sure id doesn't collide with process methods
     if (!id || !(asyncFn instanceof Function)) throw new Error('id or asyncFn input missing');
     if (!this[id]) {
         this[id] = {};
@@ -505,7 +505,22 @@ NetsProcess.prototype.agentReplay = function (name, memories) {
         // TODO validate memories?
         this._memories = aMemories;
     }
-    let res = this.runAsyncFn('agentReplayWait', agent.replay.bind(agent), [this._memories]);
+    let res = this.runAsyncFn(agent.replay.bind(agent), [this._memories]);
+    if (res !== undefined) return res;
+};
+
+NetsProcess.prototype.agentLoad = function (name, saveName) {
+    let agent = rlAgents[name];
+    if (!agent) throw new Error(`couldn't find the agent.`);
+    return agent.load(`indexeddb://${saveName || name}.model`);
+};
+
+NetsProcess.prototype.agentSave = function (name, saveName) {
+    let agent = rlAgents[name];
+    if (!agent) throw new Error(`couldn't find the agent.`);
+    // let ide = world.children[0];
+    // ide.saveFileAs(, 'text/json;chartset=utf-8', name + '.model', false);
+    let res = this.runAsyncFn(agent.save.bind(agent), [`indexeddb://${saveName || name}.model`]);
     if (res !== undefined) return res;
 };
 
@@ -514,7 +529,7 @@ NetsProcess.prototype.agentPickAction = function (name, state) {
     if (!agent) throw new Error(`couldn't find the agent.`);
     // TODO validate state
     state = state.asArray().map(it => parseFloat(it));
-    let res = this.runAsyncFn('agentPickAction', agent.act.bind(agent), [state]);
+    let res = this.runAsyncFn(agent.act.bind(agent), [state]);
     if (res !== undefined) return res;
 };
 

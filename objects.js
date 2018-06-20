@@ -2028,6 +2028,8 @@ SpriteMorph.prototype.blockTemplates = function (category) {
         blocks.push(block('agentCreate'));
         blocks.push(block('agentPickAction'));
         blocks.push(block('agentReplay'));
+        blocks.push(block('agentSave'));
+        blocks.push(block('agentLoad'));
 
 
         if (SpriteMorph.prototype.enableFirstClass) {
@@ -6392,6 +6394,8 @@ StageMorph.prototype.blockTemplates = function (category) {
         blocks.push(block('agentCreate'));
         blocks.push(block('agentPickAction'));
         blocks.push(block('agentReplay'));
+        blocks.push(block('agentSave'));
+        blocks.push(block('agentLoad'));
 
         if (SpriteMorph.prototype.enableFirstClass) {
             blocks.push(block('reportGet'));

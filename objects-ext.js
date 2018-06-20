@@ -142,6 +142,17 @@ SpriteMorph.prototype.initBlocks = function () {
         spec: 'agent %s replay memories %l'
     };
 
+    SpriteMorph.prototype.blocks.agentSave = {
+        type: 'command',
+        category: 'sensing',
+        spec: 'agent %s save with name %s'
+    };
+
+    SpriteMorph.prototype.blocks.agentLoad = {
+        type: 'command',
+        category: 'sensing',
+        spec: 'agent %s load from %s'
+    };
 
 };
 SpriteMorph.prototype.initBlocks();
