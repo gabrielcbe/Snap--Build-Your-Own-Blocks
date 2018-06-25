@@ -450,10 +450,11 @@ NetsProcess.prototype.reportStageHeight = function () {
 // temp async helper
 // when calling this function, return only if the return value is not undefined.
 NetsProcess.prototype.runAsyncFn = function (asyncFn, args) {
-    id = '_async' + 'Function'; // make sure id doesn't collide with process methods
+    let id = '_async' + 'Func'; // make sure id doesn't collide with process methods
     if (!id || !(asyncFn instanceof Function)) throw new Error('id or asyncFn input missing');
     if (!this[id]) {
         this[id] = {};
+        this[id].startTime = new Date().getTime();
         let promise = asyncFn.apply(this, args)
             .then(r => {
                 this[id].complete = true;
@@ -470,6 +471,7 @@ NetsProcess.prototype.runAsyncFn = function (asyncFn, args) {
     } else if (this[id].complete) {
         // Clear request
         let tmp = this[id];
+        // console.debug('async fn took', new Date().getTime() - this[id].startTime, this);
         this[id] = null;
         return tmp.response;
     } else if (this[id].error) {
