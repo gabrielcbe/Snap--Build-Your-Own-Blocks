@@ -2025,6 +2025,13 @@ SpriteMorph.prototype.blockTemplates = function (category) {
         blocks.push('-');
         blocks.push(block('reportAttributeOf'));
         blocks.push('-');
+        blocks.push(block('mlInitModel'));
+        blocks.push(block('mlAddDenseLayer'));
+        blocks.push(block('mlCompileModel'));
+        blocks.push(block('mlModelSummary'));
+        blocks.push(block('mlFitModel'));
+        blocks.push(block('mlPredict'));
+        blocks.push('-');
         blocks.push(block('agentCreate'));
         blocks.push(block('agentPickAction'));
         blocks.push(block('agentReplay'));
@@ -6390,6 +6397,13 @@ StageMorph.prototype.blockTemplates = function (category) {
         blocks.push(block('getTimer'));
         blocks.push('-');
         blocks.push(block('reportAttributeOf'));
+        blocks.push('-');
+        blocks.push(block('mlInitModel'));
+        blocks.push(block('mlAddDenseLayer'));
+        blocks.push(block('mlCompileModel'));
+        blocks.push(block('mlModelSummary'));
+        blocks.push(block('mlFitModel'));
+        blocks.push(block('mlPredict'));
         blocks.push('-');
         blocks.push(block('agentCreate'));
         blocks.push(block('agentPickAction'));

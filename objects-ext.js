@@ -124,6 +124,43 @@ SpriteMorph.prototype.initBlocks = function () {
     };
 
     // ML blocks
+    SpriteMorph.prototype.blocks.mlInitModel = {
+        type: 'command',
+        category: 'sensing',
+        spec: 'init model %s'
+    };
+
+    SpriteMorph.prototype.blocks.mlAddDenseLayer = {
+        type: 'command',
+        category: 'sensing',
+        spec: 'model %s add dense layer units %n inputShape %l activation %s'
+    };
+
+    SpriteMorph.prototype.blocks.mlCompileModel = {
+        type: 'command',
+        category: 'sensing',
+        spec: 'compile model %s loss %s optimizer %s'
+    };
+
+    SpriteMorph.prototype.blocks.mlFitModel = {
+        type: 'command',
+        category: 'sensing',
+        spec: 'fit model %s xs %l ys %l epochs %n batch size %n'
+    };
+
+    SpriteMorph.prototype.blocks.mlPredict = {
+        type: 'reporter',
+        category: 'sensing',
+        spec: 'model %s predict xs %l'
+    };
+
+    SpriteMorph.prototype.blocks.mlModelSummary = {
+        type: 'command',
+        category: 'sensing',
+        spec: 'model %s summary'
+    };
+
+
     SpriteMorph.prototype.blocks.agentCreate = {
         type: 'command',
         category: 'sensing',

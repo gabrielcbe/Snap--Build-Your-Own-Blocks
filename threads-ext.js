@@ -1,5 +1,5 @@
 /* global ThreadManager, ensureFullUrl, Process, Context, IDE_Morph, Costume, StageMorph,
-   List, SnapActions, isObject, newCanvas, Point, Agent */
+   List, SnapActions, isObject, newCanvas, Point, Agent, tf */
 
 // NetsProcess Overrides
 NetsProcess.prototype = new Process();
@@ -344,17 +344,10 @@ NetsProcess.prototype.parseRPCResult = function (result) {
 };
 
 function listToArray(list) {
-    if (! (list instanceof List)){
-        return list;
-    }
-    var combinedArray = [], v;
-    if (list === null) return null;
-    var array = list.asArray();
-    for(var i = 0; i < array.length; i++) {
-        v = array[i];
-        combinedArray.push(typeof v === 'object' ?  listToArray(v) : v);
-    }
-    return combinedArray;
+    return list.asArray().map(it => {
+        if (it instanceof List) return listToArray(it);
+        return parseFloat(it);
+    });
 }
 
 NetsProcess.prototype.getJSFromRPCStruct = function (rpc, methodSignature) {
@@ -481,6 +474,84 @@ NetsProcess.prototype.runAsyncFn = function (asyncFn, args) {
     }
     this.pushContext('doYield');
     this.pushContext();
+};
+
+// ML blocks
+
+// comesup with the correct shape for 1d or 2d input xs: [1,2,3] or [[1], [2], [3]]
+function tensorShape(array) {
+    let shape  = [array.length, 1];
+    if (Array.isArray(array[0])) {
+        shape[1] = array[0].length;
+    }
+    return shape;
+}
+
+let models = {};
+
+// makes a sequential model
+NetsProcess.prototype.mlInitModel = function (name) {
+    // remove non alphanum chars
+    if (/[^a-zA-Z0-9]/.test(name)) throw new Error('pick an alphanumeric name');
+    const model = tf.sequential();
+    models[name] = model;
+    return model;
+};
+
+// appends a dense layer to a model
+NetsProcess.prototype.mlAddDenseLayer = function (name, units, inputShape, activation='relu') {
+    const model = models[name];
+    if (!model) throw new Error(`couldn't find the model.`);
+    if (activation === '') activation = undefined;
+    if (inputShape === '') inputShape = undefined;
+    if (inputShape instanceof List) inputShape = listToArray(inputShape);
+
+    model.add(tf.layers.dense({units, inputShape, activation}));
+};
+
+NetsProcess.prototype.mlCompileModel = function (name, loss, optimizer) {
+    const model = models[name];
+    if (!model) throw new Error(`couldn't find the model.`);
+    model.compile({loss, optimizer});
+};
+
+// 1d or 2d input data
+NetsProcess.prototype.mlFitModel = function (name, xs, ys, epochs, batchSize) {
+    const model = models[name];
+    if (!model) throw new Error(`couldn't find the model.`);
+
+
+    xs = listToArray(xs);
+    ys = listToArray(ys);
+
+    let opts = {
+        batchSize: batchSize || xs.length, // by default do batch GD
+        epochs: epochs || 1
+    };
+
+    let xsTensor = tf.tensor2d(xs, tensorShape(xs));
+    let ysTensor = tf.tensor2d(ys, tensorShape(ys));
+
+    let res = this.runAsyncFn(model.fit.bind(model), [xsTensor, ysTensor, opts]);
+    if (res !== undefined) return res;
+};
+
+NetsProcess.prototype.mlPredict = function (name, xs) {
+    const model = models[name];
+    if (!model) throw new Error(`couldn't find the model.`);
+
+    xs = listToArray(xs);
+
+    let xsTensor = tf.tensor2d(xs, tensorShape(xs));
+
+    let predictions =  model.predict(xsTensor);
+    return predictions.dataSync();
+};
+
+NetsProcess.prototype.mlModelSummary = function (name) {
+    const model = models[name];
+    if (!model) throw new Error(`couldn't find the model.`);
+    model.summary();
 };
 
 // Reinforcement learning blocks
