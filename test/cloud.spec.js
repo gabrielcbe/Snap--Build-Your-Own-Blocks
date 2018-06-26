@@ -1,5 +1,8 @@
-/*globals expect, SnapCloud, driver */
+/*globals expect, driver */
 describe('cloud', function() {
+    let SnapCloud;
+    before(() => SnapCloud = driver.globals().SnapCloud);
+
     it('should set clientId immediately', function() {
         expect(SnapCloud.clientId).toBeTruthy();
     });
@@ -22,6 +25,45 @@ describe('cloud', function() {
                         throw new Error('Did not update id');
                     }
                 });
+        });
+    });
+
+    describe('isProjectActive', function () {
+        let clientId;
+
+        before(() => {
+            clientId = SnapCloud.clientId;
+            return driver.reset();
+        });
+        after(() => SnapCloud.clientId = clientId);
+
+        it('should return not active if I am only occupant', function(done) {
+            SnapCloud.isProjectActive(
+                SnapCloud.projectId,
+                isActive => {
+                    if (isActive) {
+                        done('Reported room as active');
+                    } else {
+                        done();
+                    }
+                },
+                done
+            );
+        });
+
+        it('should return active if there are other occupants', function(done) {
+            SnapCloud.clientId = '_someNewId';
+            SnapCloud.isProjectActive(
+                SnapCloud.projectId,
+                isActive => {
+                    if (isActive) {
+                        done();
+                    } else {
+                        done('Reported room as inactive');
+                    }
+                },
+                done
+            );
         });
     });
 });

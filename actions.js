@@ -8,7 +8,7 @@ var logger = {
 
 // If not the leader, send operations to the leader for approval
 function ActionManager() {
-    this.id = null;
+    this.id = SnapCloud.clientId;
     this.rank = null;
     this.isLeader = false;
     this._pendingLocalActions = [];
@@ -483,7 +483,7 @@ ActionManager.prototype.onReceiveAction = function(msg) {
 };
 
 ActionManager.prototype.rejectPredecessorsInQueue = function(queue, event) {
-    var action = queue.find(action => action.equals(event));
+    var action = queue.find(function(action) { return action.equals(event)});
 
     // ensure that we found the given action
     if (action) {

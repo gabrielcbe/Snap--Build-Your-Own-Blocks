@@ -589,7 +589,7 @@ IDE_Morph.prototype.interpretUrlAnchors = function (loc) {
                                 }
                             },
                             myself.cloudError(),
-                            [SnapCloud.username, dict.ProjectName, SnapCloud.socketId()]
+                            [SnapCloud.username, dict.ProjectName, SnapCloud.clientId]
                         );
                     },
                     myself.cloudError()
@@ -3917,7 +3917,8 @@ IDE_Morph.prototype.exportProject = function (name, plain, newWindow) {
     var menu, str, dataPrefix;
 
     if (name) {
-        this.setProjectName(name);
+        var currentName = this.projectName;
+        this.silentSetProjectName(name);
         dataPrefix = 'data:text/' + plain ? 'plain,' : 'xml,';
         try {
             menu = this.showMessage('Exporting');
@@ -3933,6 +3934,7 @@ IDE_Morph.prototype.exportProject = function (name, plain, newWindow) {
                 throw err;
             }
         }
+        this.silentSetProjectName(currentName);
     }
 };
 
@@ -5544,7 +5546,12 @@ IDE_Morph.prototype.saveProjectToCloud = function (name) {
         this.room.name = name;
         SnapCloud.saveProject(
             this,
-            function () {myself.showMessage('Saved ' + contentName + ' to the cloud!', 2); },
+            function (result) {
+                if (result.name) {
+                    myself.room.silentSetRoomName(result.name);
+                }
+                myself.showMessage('Saved ' + contentName + ' to the cloud!', 2);
+            },
             this.cloudSaveError()
         );
     }
@@ -6664,7 +6671,10 @@ ProjectDialogMorph.prototype.saveCloudProject = function (name) {
     this.ide.showMessage('Saving project\nto the cloud...');
     SnapCloud.saveProject(
         this.ide,
-        function () {
+        function (result) {
+            if (result.name) {
+                myself.ide.room.silentSetRoomName(result.name);
+            }
             myself.ide.source = 'cloud';
             myself.ide.showMessage('Saved to cloud!', 2);
         },

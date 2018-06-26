@@ -132,16 +132,25 @@ NetsBloxMorph.prototype.settingsMenu = function () {
 
 NetsBloxMorph.prototype.newProject = function (projectName) {
     // Get new room name
-    var myself = this;
-    return SnapCloud.newProject(projectName)
-        .then(function(info) {
+    var myself = this,
+        callback = function(info) {
             myself.silentSetProjectName(info.roleName);
             myself.createRoom();
-            myself.selectSprite(myself.stage.children[0]);
+            myself.room.silentSetRoomName(info.name);
             if (!projectName) {
                 myself.updateUrlQueryString();
             }
             return SnapActions.openProject();
+        };
+
+    return SnapCloud.newProject(projectName)
+        .then(callback)
+        .catch(function() {
+            var defaults = {
+                name: projectName || 'untitled',
+                roleName: 'myRole',
+            };
+            callback(defaults);
         });
 };
 
@@ -371,6 +380,30 @@ NetsBloxMorph.prototype.projectMenu = function () {
             'save "' + myself.projectName + '" as XML\nto your downloads folder',
             new Color(100, 0, 0)
         ]);
+        menu.items.splice(10, 0, [
+            localize('Export to Snap! project...'),
+            function () {
+                var isSavingHistory = SnapSerializer.prototype.isSavingHistory;
+                var name = myself.room.getRoleCount() === 1 ?
+                    myself.room.name : myself.projectName;
+
+                if (myself.room.getRoleCount() > 1) {
+                    myself.inform(
+                        'Multiple Roles Detected',
+                        'As a Snap! project is equivalent to a role in NetsBlox,\n' +
+                        'we can only export a single role to a Snap! project at\n' + 
+                        'a time.\n\nTo migrate the remaining roles, please export\n' + 
+                        'them all individually.',
+                        myself.world()
+                    );
+                }
+                SnapSerializer.prototype.isSavingHistory = false;
+                myself.exportRole(name, shiftClicked);
+                SnapSerializer.prototype.isSavingHistory = isSavingHistory;
+            },
+            'export "' + myself.projectName + '" as Snap!-compatible XML',
+            new Color(100, 0, 0)
+        ]);
     }
 
     if (this.stage.deletableMessageNames().length && !this.stage.globalBlocks.length) {
@@ -535,19 +568,18 @@ NetsBloxMorph.prototype.openRoomString = function (str) {
         roles = {},
         role;
 
-    // remove empty (malformed) roles
-    room.children = room.children.filter(function(role) {
-        return role.children.length;
-    });
-    if (!room.children[0]) {
-        this.showMessage('Malformed room - No roles found.');
+    if (room.children.length === 0) {
+        this.showMessage('Malformed project - No roles found.');
         return;
     }
 
     room.children.forEach(function(role) {
+        var srcCode = role.children[0] || '';
+        var media = role.children[1] || '';
+
         roles[role.attributes.name] = {
-            SourceCode: role.children[0].toString(),
-            Media: role.children[1].toString()
+            SourceCode: srcCode.toString(),
+            Media: media.toString()
         };
     });
     role = room.children[0].attributes.name;
@@ -652,7 +684,10 @@ NetsBloxMorph.prototype.saveACopy = function () {
     }
 
     // Save the project!
-    SnapCloud.saveProjectCopy(function() {
+    SnapCloud.saveProjectCopy(function(result) {
+        if (result.name) {
+            myself.room.silentSetRoomName(result.name);
+        }
         myself.showMessage('Made your own copy and saved it to the cloud!', 2);
     }, this.cloudError());
 };
@@ -696,7 +731,10 @@ NetsBloxMorph.prototype.saveProjectToCloud = function (name) {
             myself.showMessage('Saving ' + contentName + '\nto the cloud...');
             SnapCloud.saveProject(
                 myself,
-                function () {
+                function (result) {
+                    if (result.name) {
+                        myself.room.silentSetRoomName(result.name);
+                    }
                     if (overwrite) {
                         myself.showMessage('Saved ' + contentName + ' to cloud!', 2);
                     } else {
@@ -852,7 +890,8 @@ NetsBloxMorph.prototype.initializeCloud = function () {
 };
 
 NetsBloxMorph.prototype.rawLoadCloudProject = function (project, isPublic) {
-    var newRoom = project.RoomName,
+    var myself = this,
+        newRoom = project.RoomName,
         isNewRole = project.NewRole === 'true',
         roleName = project.ProjectName,
         projectId = project.ProjectID;  // src proj name
@@ -862,14 +901,14 @@ NetsBloxMorph.prototype.rawLoadCloudProject = function (project, isPublic) {
     this.updateUrlQueryString(newRoom, isPublic === 'true');
     if (project.SourceCode) {
         return SnapActions.openProject(project.SourceCode)
-            .then(() => {
+            .then(function() {
                 SnapCloud.projectId = projectId;
-                this.room.silentSetRoomName(newRoom);
-                this.room.ownerId = project.Owner;
-                this.silentSetProjectName(roleName);
+                myself.room.silentSetRoomName(newRoom);
+                myself.room.ownerId = project.Owner;
+                myself.silentSetProjectName(roleName);
 
                 // Send the message to the server
-                this.sockets.updateRoomInfo();
+                myself.sockets.updateRoomInfo();
             });
     } else {  // initialize an empty code base
         this.newRole(roleName);
@@ -1258,8 +1297,7 @@ NetsBloxMorph.prototype.loadBugReport = function () {
 NetsBloxMorph.prototype.manageCollaborators = function () {
     var myself = this,
         ownerId = this.room.ownerId,
-        name = this.room.name,
-        socketId = this.sockets.uuid;
+        name = this.room.name;
 
     SnapCloud.getCollaboratorList(
         function(friends) {
@@ -1271,7 +1309,7 @@ NetsBloxMorph.prototype.manageCollaborators = function () {
                 function(user) {
                     if (user) {
                         SnapCloud.inviteToCollaborate(
-                            socketId,
+                            SnapCloud.clientId,
                             user.username,
                             ownerId,
                             name
@@ -1344,13 +1382,12 @@ NetsBloxMorph.prototype.collabResponse = function (invite, response) {
                     // Open the given project
                     SnapCloud.reconnect(
                         function () {
-                            SnapCloud.callService(
-                                'joinActiveProject',
-                                function (response) {
-                                    myself.rawLoadCloudProject(response[0]);
+                            SnapCloud.joinActiveProject(
+                                invite.ProjectID,
+                                function (xml) {
+                                    myself.rawLoadCloudProject(xml);
                                 },
-                                myself.cloudError(),
-                                [invite.roomName, invite.inviter, SnapCloud.clientId]
+                                myself.cloudError()
                             );
                         },
                         myself.cloudError()
