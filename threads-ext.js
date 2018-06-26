@@ -539,11 +539,11 @@ NetsProcess.prototype.agentPickAction = function (name, state) {
 NetsProcess.prototype.agentCreate = function (name, actionSize, stateSize) {
     // TODO validate
     // remove non alphanum chars
-    let cleanName = name.replace(/[^a-z0-9]/gmi, '').replace(/\s+/g, '');
+    if (/[^a-zA-Z0-9]/.test(name)) throw new Error('pick an alphanumeric name');
     actionSize = parseInt(actionSize);
     stateSize = parseInt(stateSize);
 
     // setup the agent with defaults and inputs
-    rlAgents[cleanName] = new Agent({actionSize: actionSize, stateSize: stateSize, epsilon: 0, batchSize: 4});
-    console.log('created agent', cleanName);
+    rlAgents[name] = new Agent({actionSize: actionSize, stateSize: stateSize, epsilon: 0, batchSize: 4});
+    console.log('created agent', name);
 };
