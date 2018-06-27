@@ -1,8 +1,9 @@
-/* global localize, SERVER_URL, nop, Cloud, SnapActions */
+/* global localize, SERVER_URL, nop, Cloud, CLIENT_ID */
 NetCloud.prototype = new Cloud();
 
 function NetCloud(clientId, url) {
     this.clientId = clientId;
+    this.roleId = null;
     Cloud.call(this, url);
 }
 
@@ -156,7 +157,7 @@ NetCloud.prototype.invitationResponse = function (id, accepted, onSuccess, onFai
                 function(response) {
                     var project = response[0];
                     if (accepted) {
-                        myself.setProjectID(project.ProjectID);
+                        myself.setLocalState(project.ProjectID, project.RoleID);
                     }
                     onSuccess(project);
                 },
@@ -211,7 +212,7 @@ NetCloud.prototype.joinActiveProject = function (id, callback, onError) {
         function(response) {
             // Update the projectID
             var projectInfo = response[0];
-            myself.setProjectID(projectInfo.ProjectID);
+            myself.setLocalState(projectInfo.ProjectID, projectInfo.RoleID);
             callback(projectInfo);
         },
         onError,
@@ -344,12 +345,13 @@ NetCloud.prototype.saveProject = function (ide, callBack, errorCall, overwrite, 
             myself.callService(
                 'saveProject',
                 function (response, url) {
-                    myself.setProjectID(response.projectId);
+                    myself.setLocalState(response.projectId, response.roleId);
                     callBack.call(null, response, url);
                 },
                 errorCall,
                 [
-                    ide.room.getCurrentRoleName(),
+                    myself.roleId,
+                    ide.projectName,
                     name || ide.room.name,
                     SnapCloud.projectId,
                     ide.room.ownerId,
@@ -434,15 +436,23 @@ NetCloud.prototype.callService = function (
 };
 
 NetCloud.prototype.reconnect = function (callback, errorCall) {
+    var myself = this;
+
     if (!(this.username && this.password)) {
         this.message('You are not logged in');
         return;
     }
+
     this.login(
         this.username,
         this.password,
         undefined,
-        callback,
+        function() {
+            console.log('reconnecting...', myself.projectId);
+            return myself.setClientState()
+                .then(() => console.log('reconnected!', myself.projectId))
+                .then(callback);
+        },
         errorCall
     );
 };
@@ -573,7 +583,7 @@ NetCloud.prototype.saveProjectCopy = function(callBack, errorCall) {
             myself.callService(
                 'saveProjectCopy',
                 function (response, url) {
-                    myself.setProjectID(response.projectId);
+                    myself.setLocalState(response.projectId, myself.roleId);
                     callBack.call(null, response, url);
                     myself.disconnect();
                 },
@@ -621,8 +631,16 @@ NetCloud.prototype.request = function (url, dict) {
     return promise;
 };
 
-NetCloud.prototype.setProjectID = function (id) {
-    this.projectId = id;
+NetCloud.prototype.setLocalState = function (projectId, roleId) {
+    if (roleId !== this.roleId) console.log('setting roleId to', roleId);
+    this.projectId = projectId;
+    this.roleId = roleId;
+};
+
+NetCloud.prototype.resetLocalState = function () {
+    var projectId = 'tmp-project-id-' + this.clientId;
+    var roleId = 'tmp-role-id-' + this.clientId;
+    this.setLocalState(projectId, roleId);
 };
 
 NetCloud.prototype.newProject = function (name) {
@@ -635,12 +653,12 @@ NetCloud.prototype.newProject = function (name) {
     if (!this.newProjectRequest) {
         this.newProjectRequest = this.request('/api/newProject', data)
             .then(function(result) {
-                myself.setProjectID(result.projectId);
+                myself.setLocalState(result.projectId, result.roleId);
                 myself.newProjectRequest = null;
                 return result;
             })
             .catch(function(req) {
-                myself.setProjectID(myself.clientId + '-' + Date.now());
+                myself.resetLocalState();
                 myself.newProjectRequest = null;
                 throw new Error(req.responseText);
             });
@@ -658,6 +676,7 @@ NetCloud.prototype.setClientState = function (room, role, owner, actionId) {
             var data = {
                 clientId: myself.clientId,
                 projectId: myself.projectId,
+                roleId: myself.roleId,
                 roomName: room,
                 roleName: role,
                 owner: owner,
@@ -667,11 +686,10 @@ NetCloud.prototype.setClientState = function (room, role, owner, actionId) {
         })
         .then(function(result) {
             // Only change the project ID if no other moves/newProjects/etc have occurred
-            myself.setProjectID(result.projectId);
+            myself.setLocalState(result.projectId, result.roleId);
             return result;
         })
         .catch(function(req) {
-            myself.setProjectID(myself.clientId + '-' + Date.now());
             throw new Error(req.responseText);
         });
 };
@@ -705,11 +723,11 @@ NetCloud.prototype.importProject = function (name, role, roles) {
 
     return this.request('/api/importProject', data)
         .then(function(result) {
-            myself.setProjectID(result.projectId);
+            myself.setLocalState(result.projectId, result.roleId);
             return result;
         })
         .catch(function(req) {
-            myself.setProjectID(myself.clientId + '-' + Date.now());
+            myself.resetLocalState();
             throw new Error(req.responseText);
         });
 };

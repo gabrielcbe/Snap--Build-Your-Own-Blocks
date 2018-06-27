@@ -1385,7 +1385,7 @@ NetsBloxMorph.prototype.collabResponse = function (invite, response) {
                     SnapCloud.reconnect(
                         function () {
                             SnapCloud.joinActiveProject(
-                                invite.ProjectID,
+                                invite.projectId,
                                 function (xml) {
                                     myself.rawLoadCloudProject(xml);
                                 },
