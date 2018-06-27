@@ -26,6 +26,17 @@ describe('cloud', function() {
                     }
                 });
         });
+
+        it('should set roleId on fail', function() {
+            const oldId = SnapCloud.roleId;
+            return SnapCloud.newProject('myRole')
+                .then(() => {throw new Error('request did not fail');})
+                .catch(() => {
+                    if (oldId === SnapCloud.roleId) {
+                        throw new Error('Did not update id');
+                    }
+                });
+        });
     });
 
     describe('isProjectActive', function () {
