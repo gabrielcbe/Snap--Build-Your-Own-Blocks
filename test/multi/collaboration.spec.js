@@ -50,7 +50,7 @@ describe('collaboration', function() {
         });
     });
 
-    describe.only('shared project', function() {
+    describe('shared project', function() {
         const user2 = 'test2';
         let oldProjectId;
         let oldRoleId;
@@ -82,8 +82,6 @@ describe('collaboration', function() {
                 });
         });
 
-        //beforeEach(() => driver.user2.reset());
-
         after(() => driver.user2.login('test'));
 
         it.skip('should be able to invite collaborator to project', function() {
@@ -106,23 +104,25 @@ describe('collaboration', function() {
         });
 
         it('should change project ID', function() {
+            let projectId = null;
             return driver.user2.expect(
                 () => {
-                    let projectId = driver.user2.globals().SnapCloud.projectId;
-                    expect(projectId).toNotBe(oldProjectId);
+                    projectId = driver.user2.globals().SnapCloud.projectId;
+                    return projectId !== oldProjectId;
                 },
-                'Project ID not updated'
+                `Project ID not updated (${projectId} vs ${oldProjectId})`
             );
         });
 
         it('should have matching project IDs', function() {
+            let projectId, sharedProjectId;
             return driver.user2.expect(
                 () => {
-                    let projectId = driver.user2.globals().SnapCloud.projectId;
-                    let sharedProjectId = driver.user1.globals().SnapCloud.projectId;
-                    expect(projectId).toBe(sharedProjectId);
+                    projectId = driver.user2.globals().SnapCloud.projectId;
+                    sharedProjectId = driver.user1.globals().SnapCloud.projectId;
+                    return projectId === sharedProjectId;
                 },
-                'Project IDs do not match'
+                `Project IDs do not match (${projectId} vs ${sharedProjectId})`
             );
         });
 
@@ -130,7 +130,7 @@ describe('collaboration', function() {
             return driver.user2.expect(
                 () => {
                     let roleId = driver.user2.globals().SnapCloud.roleId;
-                    expect(roleId).toNotBe(oldRoleId);
+                    return roleId !== oldRoleId;
                 },
                 'Role ID not updated'
             );
@@ -141,7 +141,7 @@ describe('collaboration', function() {
                 () => {
                     let roleId = driver.user2.globals().SnapCloud.roleId;
                     let sharedRoleId = driver.user1.globals().SnapCloud.roleId;
-                    expect(roleId).toBe(sharedRoleId);
+                    return roleId === sharedRoleId;
                 },
                 'Role ID not updated'
             );
