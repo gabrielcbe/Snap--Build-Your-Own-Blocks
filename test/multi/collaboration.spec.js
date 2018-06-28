@@ -5,11 +5,7 @@ describe('collaboration', function() {
     const projectName = `collab-${Date.now()}`;
     before(function() {
         return driver.user1.reset()
-            //.then(() => driver.user1.addBlock('doIf'))
-            .then(() => {
-                console.log('about to add if block...');
-                return driver.user1.addBlock('doIf');
-            })
+            .then(() => driver.user1.addBlock('doIf'))
             .then(() => driver.user1.saveProjectAs(projectName));
     });
 
