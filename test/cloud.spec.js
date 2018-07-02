@@ -33,7 +33,7 @@ describe('cloud', function() {
                 .then(() => {throw new Error('request did not fail');})
                 .catch(() => {
                     if (oldId === SnapCloud.roleId) {
-                        throw new Error('Did not update id');
+                        throw new Error(`Did not update id (${SnapCloud.roleId} vs ${oldId})`);
                     }
                 });
         });
