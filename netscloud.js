@@ -527,9 +527,7 @@ NetCloud.prototype.isProjectActive = function (projectId, callBack, errorCall) {
             myself.callService(
                 'isProjectActive',
                 function(response) {
-                    var isActive = response[0].active === 'true';
-
-                    return callBack(isActive);
+                    return callBack(response.active);
                 },
                 errorCall,
                 [
