@@ -5,6 +5,7 @@ function NetCloud(clientId, url) {
     this.clientId = clientId;
     this.roleId = null;
     Cloud.call(this, url);
+    this.api = null;
 }
 
 NetCloud.prototype.login = function (
@@ -45,9 +46,7 @@ NetCloud.prototype.login = function (
         request.onreadystatechange = function () {
             if (request.readyState === 4) {
                 if (request.status === 200) {
-                    myself.api = myself.parseAPI(request.responseText);
-                    // Update session info
-                    myself.session = true;
+                    myself.api = JSON.parse(request.responseText);
                     if (myself.api.logout) {
                         myself.username = username;
                         myself.password = password;
@@ -379,7 +378,7 @@ NetCloud.prototype.callService = function (
         stickyUrl,
         postDict;
 
-    if (!this.session) {
+    if (!this.api) {
         errorCall.call(null, 'You are not connected', 'Cloud');
         return;
     }
@@ -406,7 +405,6 @@ NetCloud.prototype.callService = function (
             'Content-Type',
             'application/x-www-form-urlencoded'
         );
-        //request.setRequestHeader('MioCracker', this.session);
         //request.setRequestHeader('SESSIONGLUE', this.route);
         request.onreadystatechange = function () {
             if (request.readyState === 4) {
@@ -421,9 +419,6 @@ NetCloud.prototype.callService = function (
                         localize('Service:') + ' ' + localize(serviceName)
                     );
                     return;
-                }
-                if (serviceName === 'login') {
-                    myself.api = myself.parseAPI(request.responseText);
                 }
                 responseList = myself.parseResponse(request);
                 callBack.call(null, responseList, service.url);
@@ -687,6 +682,10 @@ NetCloud.prototype.setClientState = function (room, role, owner, actionId) {
         .then(function(result) {
             // Only change the project ID if no other moves/newProjects/etc have occurred
             myself.setLocalState(result.projectId, result.roleId);
+            if (!myself.api) {  // Set the api, if available...
+                myself.api = result.api;
+            }
+
             return result;
         })
         .catch(function(req) {
