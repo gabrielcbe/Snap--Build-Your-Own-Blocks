@@ -438,18 +438,12 @@ NetCloud.prototype.reconnect = function (callback, errorCall) {
         return;
     }
 
-    this.login(
-        this.username,
-        this.password,
-        undefined,
-        function() {
-            console.log('reconnecting...', myself.projectId);
-            return myself.setClientState()
-                .then(() => console.log('reconnected!', myself.projectId))
-                .then(callback);
-        },
-        errorCall
-    );
+    console.log('reconnecting...', myself.projectId);
+    // need to set 'api' from setClientState
+    return myself.setClientState()
+        .then(() => console.log('reconnected!', myself.projectId))
+        .then(callback)
+        .catch(errorCall);
 };
 
 NetCloud.prototype.disconnect = nop;
