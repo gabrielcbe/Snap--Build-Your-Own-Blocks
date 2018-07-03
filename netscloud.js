@@ -104,7 +104,7 @@ NetCloud.prototype.renameRole = function(roleId, name, onSuccess, onFail) {
                 'renameRole',
                 onSuccess,
                 onFail,
-                [roleId, name, myself.clientId, myself.projectId]
+                [roleId, name, myself.projectId]
             );
         },
         onFail
@@ -120,23 +120,29 @@ NetCloud.prototype.cloneRole = function(roleName, onSuccess, onFail) {
                 'cloneRole',
                 onSuccess,
                 onFail,
-                [roleName, myself.clientId]
+                [roleName, myself.projectId]
             );
         },
         onFail
     );
 };
 
-NetCloud.prototype.moveToRole = function(dstId, onSuccess, onFail) {
+NetCloud.prototype.moveToRole = function(roleId, onSuccess, onFail) {
     var myself = this;
 
     this.reconnect(
         function () {
             myself.callService(
                 'moveToRole',
-                onSuccess,
+                function(response) {
+                    var project = response[0];
+                    // Add a test for this
+                    // TODO
+                    myself.setLocalState(myself.projectId, project.RoleID);
+                    onSuccess(project);
+                },
                 onFail,
-                [myself.projectId, dstId, myself.clientId]
+                [myself.projectId, roleId, myself.clientId]
             );
         },
         function(err) {
@@ -261,14 +267,8 @@ NetCloud.prototype.getFriendList = function (callBack, errorCall) {
         function () {
             myself.callService(
                 'getFriendList',
-                function (response, url) {
-                    var ids = Object.keys(response[0] || {});
-                    ids = ids.map(function(id) {
-                        return {
-                            username: id
-                        };
-                    });
-                    callBack.call(null, ids, url);
+                function (usernames) {
+                    callBack(usernames);
                 },
                 errorCall
             );
@@ -283,28 +283,19 @@ NetCloud.prototype.getCollaboratorList = function (callBack, errorCall) {
         function () {
             myself.callService(
                 'getCollaborators',
-                function (response, url) {
-                    var usernames = Object.keys(response[0] || {}),
-                        users = [];
-
-                    for (var i = usernames.length; i--;) {
-                        users.push({
-                            username: usernames[i],
-                            collaborating: response[0][usernames[i]] !== 'false',
-                            value: response[0][usernames[i]]
-                        });
-                    }
-                    callBack.call(null, users, url);
+                function (users) {
+                    console.log(users);
+                    callBack(users);
                 },
                 errorCall,
-                [SnapCloud.clientId]
+                [myself.projectId]
             );
         },
         errorCall
     );
 };
 
-NetCloud.prototype.deleteRole = function(onSuccess, onFail, args) {
+NetCloud.prototype.deleteRole = function(roleId, onSuccess, onFail) {
     var myself = this;
     this.reconnect(
         function () {
@@ -312,7 +303,7 @@ NetCloud.prototype.deleteRole = function(onSuccess, onFail, args) {
                 'deleteRole',
                 onSuccess,
                 onFail,
-                args
+                [roleId, myself.projectId]
             );
         },
         onFail

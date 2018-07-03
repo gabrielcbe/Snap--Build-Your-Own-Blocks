@@ -561,7 +561,7 @@ RoomMorph.prototype.createNewRole = function () {
     }, null, 'createNewRole');
 };
 
-RoomMorph.prototype.editRole = function(name) {
+RoomMorph.prototype.editRole = function(role) {
     // Show a dialog of options
     //   + rename role
     //   + delete role
@@ -569,8 +569,7 @@ RoomMorph.prototype.editRole = function(name) {
     //   + transfer ownership (if occupied)
     //   + evict user (if occupied)
     //   + change role (if owned by self)
-    var users = this.getCurrentOccupants(name),
-        dialog = new EditRoleMorph(this, name, users),
+    var dialog = new EditRoleMorph(this, role),
         world = this.world();
 
     dialog.fixLayout();
@@ -588,29 +587,28 @@ RoomMorph.prototype.editRoleName = function(roleId) {
     }, null, 'editRoleName');
 };
 
-RoomMorph.prototype.moveToRole = function(dstId) {
+RoomMorph.prototype.moveToRole = function(role) {
     var myself = this;
 
-    myself.ide.showMessage('moving to ' + dstId);
+    myself.ide.showMessage('moving to ' + role.name);
     SnapCloud.moveToRole(
-        dstId,
-        function(args) {
-            myself.ide.showMessage('moved to ' + dstId + '!');
-            myself.ide.silentSetProjectName(dstId);
+        role.id,
+        function(project) {
+            myself.ide.showMessage('moved to ' + role.name + '!');
+            myself.ide.silentSetProjectName(role.name);
             myself.ide.source = 'cloud';
 
-            var proj = args[0];
             // Load the project or make the project empty
-            if (proj) {
-                if (proj.Public === 'true') {
+            if (project) {
+                if (project.Public === 'true') {
                     location.hash = '#present:Username=' +
                         encodeURIComponent(SnapCloud.username) +
                         '&ProjectName=' +
-                        encodeURIComponent(proj.ProjectName);
+                        encodeURIComponent(project.ProjectName);
                 }
 
-                if (proj.SourceCode) {
-                    myself.ide.droppedText(proj.SourceCode);
+                if (project.SourceCode) {
+                    myself.ide.droppedText(project.SourceCode);
                 } else {  // newly created role
                     SnapActions.openProject();
                 }
@@ -627,14 +625,14 @@ RoomMorph.prototype.moveToRole = function(dstId) {
 RoomMorph.prototype.deleteRole = function(role) {
     var myself = this;
     SnapCloud.deleteRole(
+        role.id,
         function(state) {
             myself.onRoomStateUpdate(state);
-            myself.ide.showMessage('deleted ' + role + '!');
+            myself.ide.showMessage('deleted ' + role.name + '!');
         },
         function (err, lbl) {
             myself.ide.cloudError().call(null, err, lbl);
-        },
-        [role, this.ownerId, this.name]
+        }
     );
 };
 
@@ -696,9 +694,6 @@ RoomMorph.prototype.inviteUser = function (role) {
         callback;
 
     callback = function(friends) {
-        friends = friends.map(function(friend) {
-            return friend.username;
-        });
         friends.unshift('myself');
         myself._inviteGuestDialog(role, friends);
     };
@@ -1498,7 +1493,7 @@ RoleMorph.prototype.fixLayout = function() {
 RoleMorph.prototype.mouseClickLeft = function() {
     var room = this.parentThatIsA(RoomMorph);
     if (room.isEditable()) {
-        room.editRole(this.name);
+        room.editRole(this);
     } else {
         this.escalateEvent('mouseClickLeft');
     }
@@ -1556,15 +1551,15 @@ RoleMorph.prototype.reactToDropOf = function(drop) {
 EditRoleMorph.prototype = new DialogBoxMorph();
 EditRoleMorph.prototype.constructor = EditRoleMorph;
 EditRoleMorph.uber = DialogBoxMorph.prototype;
-function EditRoleMorph(room, name, users) {
-    this.init(room, name, users);
+function EditRoleMorph(room, role) {
+    this.init(room, role);
 }
 
-EditRoleMorph.prototype.init = function(room, name, users) {
+EditRoleMorph.prototype.init = function(room, role) {
     EditRoleMorph.uber.init.call(this);
     this.room = room;
-    this.name = name;
-    this.users = users;
+    this.role = role;
+    this.users = role.users;
 
     var txt = new TextMorph(
         'What would you like to do?',
@@ -1586,7 +1581,7 @@ EditRoleMorph.prototype.init = function(room, name, users) {
     // Role Actions
     this.addButton('createRoleClone', 'Duplicate');
 
-    if (users.length) {  // occupied
+    if (role.users.length) {  // occupied
         // owner can evict collaborators, collaborators can evict guests
 
         if (name !== this.room.role()) {
@@ -1595,7 +1590,7 @@ EditRoleMorph.prototype.init = function(room, name, users) {
         this.addButton('inviteUser', 'Invite User');
 
         if (name !== this.room.role() &&  // can't evict own role
-            (this.room.isOwner() || this.room.isGuest(users))) {
+            (this.room.isOwner() || this.room.isGuest(role.users))) {
             this.addButton('evictUser', 'Evict User');
         }
     } else {  // vacant
@@ -1607,7 +1602,7 @@ EditRoleMorph.prototype.init = function(room, name, users) {
 };
 
 EditRoleMorph.prototype.inviteUser = function() {
-    this.room.inviteUser(this.name);
+    this.room.inviteUser(this.role.name);
     this.destroy();
 };
 
@@ -1626,17 +1621,17 @@ EditRoleMorph.prototype.fixLayout = function() {
 };
 
 EditRoleMorph.prototype.editRoleName = function() {
-    this.room.editRoleName(this.name);
+    this.room.editRoleName(this.role.name);
     this.destroy();
 };
 
 EditRoleMorph.prototype.createRoleClone = function() {
-    this.room.createRoleClone(this.name);
+    this.room.createRoleClone(this.role.name);
     this.destroy();
 };
 
 EditRoleMorph.prototype.deleteRole = function() {
-    this.room.deleteRole(this.name);
+    this.room.deleteRole(this.role);
     this.destroy();
 };
 
@@ -1646,7 +1641,7 @@ EditRoleMorph.prototype.moveToRole = function() {
         dialog,
         currentRole = this.room.getCurrentRoleName(),
         callback = function() {
-            myself.room.moveToRole(myself.name);
+            myself.room.moveToRole(myself.role);
         };
 
     myself.destroy();
@@ -1674,7 +1669,7 @@ EditRoleMorph.prototype.moveToRole = function() {
         dialog.askYesNo(
             localize('Save Current Role'),
             localize('Would you like to save changes to') + ' ' + currentRole +
-                ' ' + localize('before moving to') + ' ' + myself.name + '?',
+                ' ' + localize('before moving to') + ' ' + myself.role.name + '?',
             myself.world()
         );
     } else {
@@ -1686,7 +1681,7 @@ EditRoleMorph.prototype.evictUser = function() {
     // TODO: which user?
     // FIXME: ask which user
     // This could be moved to clicking on the username
-    this.room.evictUser(this.users[0], this.name);
+    this.room.evictUser(this.role.users[0], this.role.name);
     this.destroy();
 };
 
