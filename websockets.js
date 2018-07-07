@@ -254,13 +254,7 @@ WebSocketManager.prototype._connectWebSocket = function() {
         self.lastSocketActivity = Date.now();
         self.connected = true;
 
-        if (self.uuid) {
-            self.sendMessage({type: 'set-uuid', body: self.uuid});
-            self.onConnect(self.hasConnected);
-        } else {
-            self.sendMessage({type: 'request-uuid'});
-        }
-
+        self.onConnect(self.hasConnected);
         self.hasConnected = true;
     };
 
