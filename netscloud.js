@@ -226,8 +226,7 @@ NetCloud.prototype.joinActiveProject = function (id, callback, onError) {
 };
 
 NetCloud.prototype.evictCollaborator = function (id) {
-    var myself = this,
-        args = [SnapCloud.clientId, id];
+    var myself = this;
 
     this.reconnect(
         function () {
@@ -235,7 +234,7 @@ NetCloud.prototype.evictCollaborator = function (id) {
                 'evictCollaborator',
                 nop,
                 nop,
-                args
+                [id, myself.projectId]
             );
         },
         nop
@@ -277,16 +276,53 @@ NetCloud.prototype.getFriendList = function (callBack, errorCall) {
     );
 };
 
+NetCloud.prototype.getProject = function (id, callBack, errorCall) {
+    var myself = this;
+
+    this.reconnect(
+        function () {
+            myself.callService(
+                'getProject',
+                function (response) {
+                    var xml = response[0];
+                    myself.setLocalState(xml.ProjectID, xml.RoleID);
+                    callBack(xml);
+                },
+                errorCall,
+                [id, myself.clientId]
+            );
+        },
+        errorCall
+    );
+};
+
+NetCloud.prototype.getProjectByName = function (owner, name, callBack, errorCall) {
+    var myself = this;
+
+    this.reconnect(
+        function () {
+            myself.callService(
+                'getProjectByName',
+                function (response) {
+                    var xml = response[0];
+                    myself.setLocalState(xml.ProjectID, xml.RoleID);
+                    callBack(xml);
+                },
+                errorCall,
+                [owner, name]
+            );
+        },
+        errorCall
+    );
+};
+
 NetCloud.prototype.getCollaboratorList = function (callBack, errorCall) {
     var myself = this;
     this.reconnect(
         function () {
             myself.callService(
                 'getCollaborators',
-                function (users) {
-                    console.log(users);
-                    callBack(users);
-                },
+                callBack,
                 errorCall,
                 [myself.projectId]
             );
