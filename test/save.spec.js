@@ -5,10 +5,10 @@ describe('save', function() {
         SnapCloud = driver.globals().SnapCloud;
         ProjectDialogMorph = driver.globals().ProjectDialogMorph;
     });
-    this.timeout(10000);
+    this.timeout(15000);
 
     [
-        ['w/o ws connection', () => driver.disconnect(), () => driver.connect()],
+        //['w/o ws connection', () => driver.disconnect(), () => driver.connect()],
         ['fully connected']
     ].forEach(tuple => {
         const [label, beforeFn, afterFn] = tuple;

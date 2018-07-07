@@ -204,7 +204,7 @@ SnapDriver.prototype.waitUntil = function(fn, maxWait) {
             setTimeout(check, 25);
         }
     };
-    maxWait = maxWait || 4000;
+    maxWait = maxWait || 6000;
     check();
 
     return deferred.promise;

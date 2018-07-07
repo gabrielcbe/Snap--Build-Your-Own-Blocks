@@ -1,5 +1,7 @@
 /*globals expect, driver */
 describe('cloud', function() {
+    this.timeout(5000);
+
     let SnapCloud;
     before(() => SnapCloud = driver.globals().SnapCloud);
 
