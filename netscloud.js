@@ -646,14 +646,17 @@ NetCloud.prototype.request = function (url, dict) {
 };
 
 NetCloud.prototype.setLocalState = function (projectId, roleId) {
-    if (roleId !== this.roleId) console.log('setting roleId to', roleId);
+    if (!projectId || !roleId) debugger;
+    if (projectId === 'null') debugger;
+    if (projectId !== this.projectId) console.log('setting projectId to', projectId);
     this.projectId = projectId;
     this.roleId = roleId;
 };
 
 NetCloud.prototype.resetLocalState = function () {
-    var projectId = 'tmp-project-id-' + this.clientId;
-    var roleId = 'tmp-role-id-' + this.clientId;
+    var baseId = this.clientId + '-' + Date.now();
+    var projectId = 'tmp-project-id-' + baseId;
+    var roleId = 'tmp-role-id-' + baseId;
     this.setLocalState(projectId, roleId);
 };
 
@@ -679,6 +682,15 @@ NetCloud.prototype.newProject = function (name) {
     }
 
     return this.newProjectRequest;
+};
+
+NetCloud.prototype.getClientState = function () {
+    return {
+        username: this.username,
+        clientId: this.clientId,
+        projectId: this.projectId,
+        roleId: this.roleId
+    };
 };
 
 NetCloud.prototype.setClientState = function (room, role, owner, actionId) {

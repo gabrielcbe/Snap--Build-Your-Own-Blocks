@@ -402,6 +402,7 @@ WebSocketManager.prototype.onConnect = function() {
     var myself = this;
     return this.updateRoomInfo()
         .then(function() {
+            myself.sendMessage({type: 'set-state', body: SnapCloud.getClientState()});
             while (myself.messages.length) {
                 myself.websocket.send(myself.messages.shift());
             }
