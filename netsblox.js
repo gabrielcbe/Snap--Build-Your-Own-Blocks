@@ -575,11 +575,12 @@ NetsBloxMorph.prototype.openRoomString = function (str) {
         return;
     }
 
-    room.children.forEach(function(role) {
+    roles = room.children.map(function(role) {
         var srcCode = role.children[0] || '';
         var media = role.children[1] || '';
 
-        roles[role.attributes.name] = {
+        return {
+            ProjectName: role.attributes.name,
             SourceCode: srcCode.toString(),
             Media: media.toString()
         };
