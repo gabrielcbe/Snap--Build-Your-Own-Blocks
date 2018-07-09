@@ -591,9 +591,12 @@ NetsBloxMorph.prototype.openRoomString = function (str) {
     // Create a room with the new name
     this.newRole(role);
 
-    var name = room.attributes.name;
+    var myself = this,
+        name = room.attributes.name;
+
     return SnapCloud.importProject(name, role, roles)
-        .then(function() {
+        .then(function(state) {
+            myself.room.onRoomStateUpdate(state);
             // load the given project
             role = room.children[0];
             var projectXml = [
