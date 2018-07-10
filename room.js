@@ -130,8 +130,8 @@ RoomMorph.prototype.setRoomName = function(name) {
 
     if (changed) {
         return SnapCloud.setProjectName(name)
-            .then(function(name) {
-                return myself.silentSetRoomName(name);
+            .then(function(state) {
+                return myself.onRoomStateUpdate(state);
             })
             .catch(this.ide.cloudError());
     }

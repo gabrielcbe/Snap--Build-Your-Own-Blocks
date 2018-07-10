@@ -740,7 +740,7 @@ NetCloud.prototype.setProjectName = function(name) {
             return myself.request('/api/setProjectName', data);
         })
         .then(function(result) {
-            return result.name;
+            return result;
         });
 };
 
