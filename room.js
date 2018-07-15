@@ -675,17 +675,17 @@ RoomMorph.prototype.setRoleName = function(roleId, name) {
     });
 };
 
-RoomMorph.prototype.evictUser = function (user, role) {
+RoomMorph.prototype.evictUser = function (user) {
     var myself = this;
     SnapCloud.evictUser(
+        user.uuid,
         function(state) {
             myself.onRoomStateUpdate(state);
             myself.ide.showMessage('evicted ' + user.username + '!');
         },
         function (err, lbl) {
             myself.ide.cloudError().call(null, err, lbl);
-        },
-        [user.uuid, role, this.ownerId, this.name]
+        }
     );
 };
 
@@ -1677,7 +1677,7 @@ EditRoleMorph.prototype.evictUser = function() {
     // TODO: which user?
     // FIXME: ask which user
     // This could be moved to clicking on the username
-    this.room.evictUser(this.role.users[0], this.role.name);
+    this.room.evictUser(this.role.users[0]);
     this.destroy();
 };
 

@@ -345,7 +345,7 @@ NetCloud.prototype.deleteRole = function(roleId, onSuccess, onFail) {
     );
 };
 
-NetCloud.prototype.evictUser = function(onSuccess, onFail, args) {
+NetCloud.prototype.evictUser = function(userId, onSuccess, onFail) {
     var myself = this;
     this.reconnect(
         function () {
@@ -353,7 +353,7 @@ NetCloud.prototype.evictUser = function(onSuccess, onFail, args) {
                 'evictUser',
                 onSuccess,
                 onFail,
-                args
+                [userId, myself.projectId]
             );
         },
         onFail
