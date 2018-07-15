@@ -759,7 +759,7 @@ RoomMorph.prototype.promptShare = function(name) {
 RoomMorph.prototype._inviteGuestDialog = function (role, friends) {
     new UserDialogMorph(this, function(user) {
         if (user) {
-            this.inviteGuest(user, role);
+            this.inviteGuest(user, role.id);
         }
     }, friends).popUp();
 };
@@ -769,25 +769,21 @@ RoomMorph.prototype.inviteGuest = function (friend, role) {
     if (friend === 'myself') {
         friend = SnapCloud.username;
     }
-    SnapCloud.inviteGuest(SnapCloud.clientId, friend, this.ownerId, this.name, role);
+    SnapCloud.inviteGuest(friend, role);
 };
 
-RoomMorph.prototype.promptInvite = function (params) {  // id, room, roomName, role
+RoomMorph.prototype.promptInvite = function (id, role, roomName, inviter) {
     // Create a confirm dialog about joining the group
     var myself = this,
         // unpack the params
-        id = params.id,
-        role = params.role,
-        roomName = params.roomName,
-
         action = this._invitationResponse.bind(this, id, true, role),
         dialog = new DialogBoxMorph(null, action),
         msg;
 
-    if (params.inviter === SnapCloud.username) {
+    if (inviter === SnapCloud.username) {
         msg = 'Would you like to move to "' + roomName + '"?';
     } else {
-        msg = params.inviter + ' has invited you to join\nhim/her at "' + roomName +
+        msg = inviter + ' has invited you to join\nhim/her at "' + roomName +
             '"\nAccept?';
     }
 
@@ -825,7 +821,7 @@ RoomMorph.prototype._invitationResponse = function (id, response, role) {
                 myself.ide.newRole(role);
             }
             myself.ide.showMessage('you have joined the room!', 2);
-            myself.ide.silentSetProjectName(role);  // Set the role name FIXME
+            myself.ide.silentSetProjectName(role);
             SnapCloud.disconnect();
         },
         function(err) {
@@ -1602,7 +1598,7 @@ EditRoleMorph.prototype.init = function(room, role) {
 };
 
 EditRoleMorph.prototype.inviteUser = function() {
-    this.room.inviteUser(this.role.name);
+    this.room.inviteUser(this.role);
     this.destroy();
 };
 

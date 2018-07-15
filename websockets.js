@@ -89,7 +89,7 @@ WebSocketManager.MessageHandlers = {
 
     // Receive an invite to join a room
     'room-invitation': function(msg) {
-        this.ide.room.promptInvite(msg);
+        this.ide.room.promptInvite(msg.id, msg.role, msg.roomName, msg.inviter);
     },
 
     'collab-invitation': function(msg) {
@@ -103,8 +103,9 @@ WebSocketManager.MessageHandlers = {
         this.ide.newProject();
     },
 
-    'project-fork': function() {
-        this.ide.showMessage('You have been evicted from the room.\nYou are now the owner.');
+    'evicted': function() {
+        this.ide.showMessage('You have been evicted from the project.');
+        this.ide.newProject();
     },
 
     'permission-elevation-request': function(msg) {

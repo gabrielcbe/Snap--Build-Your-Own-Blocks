@@ -176,9 +176,8 @@ NetCloud.prototype.invitationResponse = function (id, accepted, onSuccess, onFai
     );
 };
 
-NetCloud.prototype.inviteGuest = function () {
-    var myself = this,
-        args = arguments;
+NetCloud.prototype.inviteGuest = function (userId, roleId) {
+    var myself = this;
 
     this.reconnect(
         function () {
@@ -186,7 +185,7 @@ NetCloud.prototype.inviteGuest = function () {
                 'inviteGuest',
                 nop,
                 nop,
-                args
+                [SnapCloud.clientId, userId, roleId, myself.projectId]
             );
         },
         nop
