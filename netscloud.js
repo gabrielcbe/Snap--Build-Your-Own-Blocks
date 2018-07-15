@@ -739,7 +739,7 @@ NetCloud.prototype.setProjectName = function(name) {
             return myself.request('/api/setProjectName', data);
         })
         .then(function(result) {
-            return result.name;
+            return result;
         });
 };
 
@@ -756,7 +756,7 @@ NetCloud.prototype.importProject = function (name, role, roles) {
     return this.request('/api/importProject', data)
         .then(function(result) {
             myself.setLocalState(result.projectId, result.roleId);
-            return result;
+            return result.state;
         })
         .catch(function(req) {
             myself.resetLocalState();
