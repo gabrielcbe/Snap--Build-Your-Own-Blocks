@@ -5868,7 +5868,6 @@ IDE_Morph.prototype.prompt = function (message, callback, choices, key) {
     );
 };
 
-
 // ProjectDialogMorph ////////////////////////////////////////////////////
 
 // ProjectDialogMorph inherits from DialogBoxMorph:
