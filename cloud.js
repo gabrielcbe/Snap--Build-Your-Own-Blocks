@@ -409,6 +409,23 @@ Cloud.prototype.getProjectList = function (callBack, errorCall) {
     );
 };
 
+Cloud.prototype.getSharedProjectList = function(callBack, errorCall) {
+    var myself = this;
+    this.reconnect(
+        function () {
+            myself.callService(
+                'getSharedProjectList',
+                function (response, url) {
+                    callBack.call(null, response, url);
+                    myself.disconnect();
+                },
+                errorCall
+            );
+        },
+        errorCall
+    );
+};
+
 Cloud.prototype.changePassword = function (
     oldPW,
     newPW,
@@ -475,9 +492,7 @@ Cloud.prototype.callURL = function (url, callBack, errorCall) {
         request.onreadystatechange = function () {
             if (request.readyState === 4) {
                 if (request.responseText) {
-                    var responseList = myself.parseResponse(
-                        request.responseText
-                    );
+                    var responseList = myself.parseResponse(request);
                     callBack.call(null, responseList, url);
                 } else {
                     errorCall.call(
@@ -492,6 +507,10 @@ Cloud.prototype.callURL = function (url, callBack, errorCall) {
     } catch (err) {
         errorCall.call(this, err.toString(), url);
     }
+};
+
+Cloud.prototype.supportsService = function (serviceName) {
+    return !!this.api[serviceName];
 };
 
 Cloud.prototype.callService = function (
@@ -559,9 +578,7 @@ Cloud.prototype.callService = function (
                 if (serviceName === 'getRawProject') {
                     responseList = request.responseText;
                 } else {
-                    responseList = myself.parseResponse(
-                        request.responseText
-                    );
+                    responseList = myself.parseResponse(request);
                 }
                 callBack.call(null, responseList, service.url);
             }
@@ -601,7 +618,16 @@ Cloud.prototype.parseAPI = function (src) {
     return api;
 };
 
-Cloud.prototype.parseResponse = function (src) {
+Cloud.prototype.parseResponse = function (request) {
+    var src = request.responseText;
+    if (request.getResponseHeader('content-type').indexOf('application/json') > -1) {
+        return JSON.parse(src);
+    } else {
+        return this.parseSnapResponse(src);
+    }
+};
+
+Cloud.prototype.parseSnapResponse = function (src) {
     var ans = [],
         lines;
     if (!src) {return ans; }

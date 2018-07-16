@@ -231,6 +231,11 @@ XML_Element.prototype.toString = function (isFormatted, indentationLevel) {
         result += indent;
     }
 
+    if (this.tag === 'CDATA') {
+        result += '<![CDATA[' + this.contents + ']]>';
+        return result;
+    }
+
     // opening tag
     result += ('<' + this.tag);
 
@@ -238,7 +243,7 @@ XML_Element.prototype.toString = function (isFormatted, indentationLevel) {
     for (key in this.attributes) {
         if (Object.prototype.hasOwnProperty.call(this.attributes, key)
                 && this.attributes[key]) {
-            result += ' ' + key + '="' + this.attributes[key] + '"';
+            result += ' ' + key + '="' + this.escape(this.attributes[key]) + '"';
         }
     }
 
@@ -247,7 +252,7 @@ XML_Element.prototype.toString = function (isFormatted, indentationLevel) {
         result += '/>';
     } else {
         result += '>';
-        result += this.contents;
+        result += this.escape(this.contents);
         this.children.forEach(function (element) {
             if (isFormatted) {
                 result += '\n';
@@ -327,6 +332,13 @@ XML_Element.prototype.parseStream = function (stream) {
 
     // tag:
     this.tag = stream.word();
+    if (this.tag.indexOf('![CDATA[') === 0) {
+        this.contents = this.tag.slice(8) + stream.upTo(']]>');
+        this.tag = 'CDATA';
+        stream.skip(3);
+        return;
+    }
+
     stream.skipSpace();
 
     // attributes:
