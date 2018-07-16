@@ -4394,18 +4394,11 @@ IDE_Morph.prototype.openCloudDataString = function (str) {
         size = Math.round(str.length / 1024);
 
     this.exitReplayMode();
-    this.nextSteps([
-        function () {
-            msg = myself.showMessage('Opening project\n' + size + ' KB...');
-        },
-        function () {nop(); }, // yield (bug in Chrome)
-        function () {
-            SnapActions.openProject(str);
-        },
-        function () {
+    msg = myself.showMessage('Opening project\n' + size + ' KB...');
+    return SnapActions.openProject(str)
+        .then(function() {
             msg.destroy();
-        }
-    ]);
+        });
 };
 
 IDE_Morph.prototype.rawOpenCloudDataString = function (str) {

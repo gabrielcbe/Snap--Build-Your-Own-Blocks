@@ -605,13 +605,21 @@ NetsBloxMorph.prototype.openRoomString = function (str) {
                 role.childNamed('media').toString(),
                 '</snapdata>'
             ].join('');
-            return SnapActions.openProject(projectXml);
+            return SnapActions.openProject(projectXml)
+                .then(function () {
+                    myself.sockets.updateRoomInfo();
+                });
         });
 };
 
 NetsBloxMorph.prototype.openCloudDataString = function (model, parsed) {
-    var str = parsed ? model.toString() : model;
-    return IDE_Morph.prototype.openCloudDataString.call(this, str);
+    var myself = this,
+        str = parsed ? model.toString() : model;
+
+    return IDE_Morph.prototype.openCloudDataString.call(this, str)
+        .then(function() {
+            myself.sockets.updateRoomInfo();
+        });
 };
 
 // Serialize a project and save to the browser.
@@ -806,6 +814,8 @@ NetsBloxMorph.prototype.droppedText = function (aString, name) {
                     myself.room.setRoomName(name);
                 }
                 msg.destroy();
+
+                myself.sockets.updateRoomInfo();
             });
     } else {
         return IDE_Morph.prototype.droppedText.call(this, aString, name);
