@@ -9104,13 +9104,7 @@ PaletteHandleMorph.prototype.mouseEnter
 
 PaletteHandleMorph.prototype.mouseLeave
     = StageHandleMorph.prototype.mouseLeave;
-    
+
 PaletteHandleMorph.prototype.mouseDoubleClick = function () {
     this.target.parentThatIsA(IDE_Morph).setPaletteWidth(200);
 };
-
-
-/* migrating to the new gui solving merge confilct */
-function isMobileDevice() {
-    return (typeof window.orientation !== 'undefined') || (navigator.userAgent.indexOf('Mobile') !== -1);
-}
