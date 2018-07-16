@@ -127,30 +127,6 @@ NetCloud.prototype.cloneRole = function(roleName, onSuccess, onFail) {
     );
 };
 
-NetCloud.prototype.moveToRole = function(roleId, onSuccess, onFail) {
-    var myself = this;
-
-    this.reconnect(
-        function () {
-            myself.callService(
-                'moveToRole',
-                function(response) {
-                    var project = response[0];
-                    // Add a test for this
-                    // TODO
-                    myself.setLocalState(myself.projectId, project.RoleID);
-                    onSuccess(project);
-                },
-                onFail,
-                [myself.projectId, roleId, myself.clientId]
-            );
-        },
-        function(err) {
-            myself.ide.showMessage(err, 2);
-        }
-    );
-};
-
 NetCloud.prototype.invitationResponse = function (id, accepted, onSuccess, onFail) {
     var myself = this,
         args = [id, accepted, SnapCloud.clientId];
@@ -275,8 +251,13 @@ NetCloud.prototype.getFriendList = function (callBack, errorCall) {
     );
 };
 
-NetCloud.prototype.getProject = function (id, callBack, errorCall) {
-    var myself = this;
+NetCloud.prototype.getProject = function (id, callBack, errorCall, roleId) {
+    var myself = this,
+        args = [id];
+
+    if (roleId) {
+        args.push(roleId);
+    }
 
     this.reconnect(
         function () {
@@ -288,7 +269,7 @@ NetCloud.prototype.getProject = function (id, callBack, errorCall) {
                     callBack(xml);
                 },
                 errorCall,
-                [id, myself.clientId]
+                args
             );
         },
         errorCall
