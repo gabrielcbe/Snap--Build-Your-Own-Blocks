@@ -228,7 +228,9 @@ IDE_Morph.prototype.openReplayString = function (str) {
 //// Mobile Mode ////
 
 IDE_Morph.prototype.isMobileDevice = function() {
-    return (typeof window.orientation !== 'undefined') || (navigator.userAgent.indexOf('Mobile') !== -1);
+    return (screen.width <= 420 && screen.height <= 800) &&
+        (navigator.userAgent.toLowerCase().indexOf('mobile') !== -1) &&
+        (typeof window.orientation !== 'undefined');
 };
 
 IDE_Morph.prototype.mobileMode = {
