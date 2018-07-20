@@ -64,6 +64,10 @@ SnapDriver.prototype.setProjectNameNoConfirm = function(name) {
     this.dialog().accept();
 };
 
+SnapDriver.prototype.getCategoryNames = function() {
+    return this.ide().categories.children.map(category => category.labelString);
+}
+
 SnapDriver.prototype.selectCategory = function(cat) {
     var categories = this.ide().categories.children;
     var category = categories.find(btn => btn.labelString.toLowerCase() === cat.toLowerCase());
