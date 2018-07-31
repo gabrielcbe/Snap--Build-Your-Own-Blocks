@@ -31,9 +31,13 @@
                   });
               }, Promise.resolve())
               .then(() => {
-                horde = gremlins.createHorde()
-                    .gremlin(categoryChangeGremlin)
-                    .gremlin(projectNameChangeGremlin);
+                horde = gremlins.createHorde();
+
+                // Add all available gremlin types
+                gremlinFunctions.forEach(f => {
+                    horde.gremlin(f);
+                });
+
                 horde.unleash();
             });
       }

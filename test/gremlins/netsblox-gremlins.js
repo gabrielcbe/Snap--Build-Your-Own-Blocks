@@ -21,3 +21,18 @@ const projectNameChangeGremlin = function() {
     driver.selectTab('scripts');
 };
 
+/**
+ * Add a random block at a random position, out of the options in the current category
+ */
+const addBlockGremlin = function() {
+
+};
+
+/**
+ * List of available gremlin types
+ */
+const gremlinFunctions = [
+    categoryChangeGremlin, 
+    projectNameChangeGremlin,
+    addBlockGremlin,
+];
