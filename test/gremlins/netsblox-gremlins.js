@@ -46,6 +46,27 @@ const addBlockGremlin = function() {
 };
 
 /**
+ * Remove random blocks
+ */
+const removeBlockGremlin = function() {
+    // Find random block
+
+    // Drag it out
+};
+
+/**
+ * Attach random blocks
+ */
+const attachBlockGremlin = function() {
+    // Find two compatible blocks
+
+    // Find attach point of second block
+
+    // Drag them together
+
+};
+
+/**
  * List of available gremlin types
  */
 const gremlinFunctions = [
