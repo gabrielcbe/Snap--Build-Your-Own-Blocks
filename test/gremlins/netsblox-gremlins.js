@@ -17,7 +17,7 @@ const projectNameChangeGremlin = function() {
         newName += String.fromCharCode("0x" + Math.floor(Math.random() * 65503 + 32).toString(16));
     }
 
-    driver.setProjectName(newName);
+    driver.setProjectNameNoConfirm(newName);
     driver.selectTab('scripts');
 };
 
@@ -25,7 +25,24 @@ const projectNameChangeGremlin = function() {
  * Add a random block at a random position, out of the options in the current category
  */
 const addBlockGremlin = function() {
+    const {CommandBlockMorph, Point} = driver.globals();
+    
+    // Get block to add
+    let blocks = driver.palette().contents.children.filter(f => f instanceof CommandBlockMorph);
 
+    // Make sure we're not, for example, in the custom tab with no custom blocks
+    if(blocks.length == 0)
+    {
+        console.log("No blocks available :(");
+        return;
+    }
+
+    let block = blocks[Math.floor(Math.random() * blocks.length)];
+
+    // Add block
+    let bb = driver.ide().currentSprite.scripts.bounds;
+    let location = new Point(Math.random() * bb.width() + bb.left(), Math.random() * bb.height() + bb.top());
+    driver.dragAndDrop(block, location);
 };
 
 /**
