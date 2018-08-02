@@ -38,6 +38,12 @@
                     horde.gremlin(f);
                 });
 
+                // Use distribution to shape output
+                horde.strategy(gremlins.strategies.distribution()
+                    .delay(50) // 50 ms delay
+                    .distribution(getGremlinDistribution()) // distribution defined in other file
+                );
+
                 horde.unleash();
             });
       }

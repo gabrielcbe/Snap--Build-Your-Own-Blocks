@@ -46,13 +46,83 @@ const addBlockGremlin = function() {
 };
 
 /**
+ * Get an array of all usable blocks
+ */
+function getAllBlocks() {
+    
+    const validBlock = (f) => f.blockSpec != undefined;
+
+    let scripts = driver.ide().currentSprite.scripts;
+    let parentblocks = scripts.children.filter(validBlock);
+    let blocks = [];
+
+    // Add blocks
+    while(parentblocks.length > 0)
+    {
+        let p = parentblocks.shift();
+
+        if(blocks.indexOf(p) !== -1)
+        {
+            continue;
+        }
+
+        if(validBlock(p))
+        {
+            blocks.push(p);
+        }
+
+        p.children.forEach(c => parentblocks.push(c));
+
+        let children = p.children.filter(validBlock);
+        children.forEach(c => parentblocks.push(c));
+    }
+
+    return blocks;
+}
+
+/**
+ * Get a random block out of the available ones
+ */
+function getRandomBlock() {
+    let blocks = getAllBlocks();
+
+    // Can't select anything from empty
+    if(blocks.length < 1)
+        return null;
+
+    return blocks[Math.floor(Math.random() * blocks.length)];
+}
+
+/**
  * Remove random blocks
  */
 const removeBlockGremlin = function() {
     // Find random block
+    let block = getRandomBlock();
+
+    // Need a block to remove
+    if(block === null)
+        return;
 
     // Drag it out
+    let location = driver.palette().center();
+    driver.dragAndDrop(block, location);
 };
+
+/**
+ * Execute random block
+ */
+const executeBlockGremlin = function() {
+
+    // Find random block
+    let block = getRandomBlock();
+
+    if(block === null)
+        return;
+
+    // Run it
+    driver.click(block);
+}
 
 /**
  * Attach random blocks
@@ -67,10 +137,54 @@ const attachBlockGremlin = function() {
 };
 
 /**
+ * Add a sprite to the project
+ */
+const addSpriteGremlin = function() {
+
+};
+
+/**
+ * Switch between active sprites
+ */
+const switchSpriteGremlin = function() {
+
+};
+
+/**
  * List of available gremlin types
  */
 const gremlinFunctions = [
     categoryChangeGremlin, 
     projectNameChangeGremlin,
     addBlockGremlin,
+    removeBlockGremlin,
+    executeBlockGremlin
 ];
+
+/**
+ * Distribution of gremlin types, for devs to edit
+ */
+const _gremlinDistribution = [
+    15, //categoryChangeGremlin 
+    5, //projectNameChangeGremlin
+    30, //addBlockGremlin
+    15, //removeBlockGremlin
+    10, //executeBlockGremlin
+];
+
+/**
+ * Get the normalized version of the distribution for use with Distribution strategy
+ */
+const getGremlinDistribution = function(){
+    let sum = 0, distribution = [];
+
+    _gremlinDistribution.forEach(e => {
+        sum += e;
+    });
+
+    _gremlinDistribution.forEach(e => {
+        distribution.push(e / sum);
+    });
+
+    return distribution;
+}
