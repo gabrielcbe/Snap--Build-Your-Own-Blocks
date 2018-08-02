@@ -228,7 +228,12 @@ IDE_Morph.prototype.openReplayString = function (str) {
 //// Mobile Mode ////
 
 IDE_Morph.prototype.isMobileDevice = function() {
-    return (screen.width <= 420 && screen.height <= 800) &&
+    var smallSideMax = 420,
+        bigSideMax = 800;
+    var hasSmallPortraitDims = screen.width <= smallSideMax && screen.height <= bigSideMax;
+    var hasSmallLandscapeDims = screen.width <= bigSideMax && screen.height <= smallSideMax;
+
+    return (hasSmallPortraitDims || hasSmallLandscapeDims) &&
         (navigator.userAgent.toLowerCase().indexOf('mobile') !== -1) &&
         (typeof window.orientation !== 'undefined');
 };
