@@ -65,6 +65,7 @@ function _getAllBlocks(onlyVisible = true) {
     
     let scripts = driver.ide().currentSprite.scripts;
 
+    // Determine predicate to use
     let validBlock = undefined;
     if(onlyVisible)
     {
@@ -194,7 +195,15 @@ const addSpriteGremlin = function() {
  * Switch between active sprites
  */
 const switchSpriteGremlin = function() {
+    const {SpriteIconMorph} = driver.globals();
+    
+    // Get available sprites (+stage)
+    let sprites = driver.ide().corral.allChildren();
+    sprites = sprites.filter(f => f instanceof SpriteIconMorph);
 
+    // Click random one
+    let sprite = sprites[Math.floor(Math.random() * sprites.length)];
+    driver.click(sprite.center());
 };
 
 /**
@@ -207,6 +216,7 @@ const gremlinFunctions = [
     removeBlockGremlin,
     executeBlockGremlin,
     addSpriteGremlin,
+    switchSpriteGremlin,
 ];
 
 /**
@@ -214,11 +224,12 @@ const gremlinFunctions = [
  */
 const _gremlinDistribution = [
     15, //categoryChangeGremlin 
-    2, //projectNameChangeGremlin
+    1, //projectNameChangeGremlin
     30, //addBlockGremlin
     15, //removeBlockGremlin
     10, //executeBlockGremlin
-    2, //addSpriteGremlin
+    1, //addSpriteGremlin
+    2, //switchSpriteGremlin
 ];
 
 /**
