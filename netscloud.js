@@ -400,7 +400,9 @@ NetCloud.prototype.callService = function (
     if (args && args.length > 0) {
         postDict = {};
         service.parameters.forEach(function (parm, idx) {
-            postDict[parm] = args[idx];
+            if (args[idx] !== undefined) {
+                postDict[parm] = args[idx];
+            }
         });
     }
     try {
