@@ -673,7 +673,7 @@ NetCloud.prototype.getClientState = function () {
     };
 };
 
-NetCloud.prototype.setClientState = function (room, role, owner, actionId) {
+NetCloud.prototype.setClientState = function (room, role, actionId) {
     var myself = this,
         newProjectRequest = this.newProjectRequest || Promise.resolve();
 
@@ -688,7 +688,6 @@ NetCloud.prototype.setClientState = function (room, role, owner, actionId) {
                 roleId: myself.roleId,
                 roomName: room,
                 roleName: role,
-                owner: owner,
                 actionId: actionId
             };
             return myself.request('/api/setClientState', data);
