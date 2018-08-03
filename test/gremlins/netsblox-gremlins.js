@@ -153,7 +153,7 @@ const executeBlockGremlin = function() {
         let btnContainer = driver.dialog().children.find(f => f.children.find(g => g.action === "cancel"));
 
         if(btnContainer != undefined && btnContainer.children.length > 0){
-            driver.click(btnContainer.children[btnContainer.children.length - 1].center())
+            driver.click(btnContainer.children[btnContainer.children.length - 1].center());
         }
     }
 }
@@ -184,7 +184,10 @@ const attachBlockGremlin = function() {
  * Add a sprite to the project
  */
 const addSpriteGremlin = function() {
-
+    let addSpriteBtn = driver.ide().corralBar.children.find(f => f.action === "addNewSprite");
+    
+    // Click the button
+    driver.click(addSpriteBtn.center());
 };
 
 /**
@@ -202,7 +205,8 @@ const gremlinFunctions = [
     projectNameChangeGremlin,
     addBlockGremlin,
     removeBlockGremlin,
-    executeBlockGremlin
+    executeBlockGremlin,
+    addSpriteGremlin,
 ];
 
 /**
@@ -210,10 +214,11 @@ const gremlinFunctions = [
  */
 const _gremlinDistribution = [
     15, //categoryChangeGremlin 
-    5, //projectNameChangeGremlin
+    2, //projectNameChangeGremlin
     30, //addBlockGremlin
     15, //removeBlockGremlin
     10, //executeBlockGremlin
+    2, //addSpriteGremlin
 ];
 
 /**
