@@ -24,8 +24,8 @@ const projectNameChangeGremlin = function() {
 /**
  * Add a random block at a random position, out of the options in the current category
  */
-const addBlockGremlin = function() {
-    const {CommandBlockMorph, Point} = driver.globals();
+const addBlockGremlin = function() {    
+    const {Point, CommandBlockMorph} = driver.globals();
     
     // Get block to add
     let blocks = driver.palette().contents.children.filter(f => f instanceof CommandBlockMorph);
@@ -40,19 +40,41 @@ const addBlockGremlin = function() {
     let block = blocks[Math.floor(Math.random() * blocks.length)];
 
     // Add block
-    let bb = driver.ide().currentSprite.scripts.bounds;
+    let bb = driver.ide().currentSprite.scripts.scrollFrame.bounds;
     let location = new Point(Math.random() * bb.width() + bb.left(), Math.random() * bb.height() + bb.top());
     driver.dragAndDrop(block, location);
 };
 
 /**
+ * Determine if a point is inside a bounding box
+ * @param {Rectangle} box
+ * @param {Point} point 
+ */
+const _inBounds = function(box, point) {
+    let {top, left} = {top: box.origin.y, left: box.origin.y};
+    let {bottom, right} = {bottom: box.corner.y, right: box.corner.y};
+    let {x, y} = point;
+
+    return x >= left && y >= top && x <= right && y <= bottom;
+}
+
+/**
  * Get an array of all usable blocks
  */
-function getAllBlocks() {
+function _getAllBlocks(onlyVisible = true) {
     
-    const validBlock = (f) => f.blockSpec != undefined;
-
     let scripts = driver.ide().currentSprite.scripts;
+
+    let validBlock = undefined;
+    if(onlyVisible)
+    {
+        validBlock = (f) => (f.blockSpec != undefined && _inBounds(scripts.scrollFrame.boundingBox(), f.center()));
+    }
+    else
+    {
+        validBlock = (f) => (f.blockSpec != undefined);
+    }
+
     let parentblocks = scripts.children.filter(validBlock);
     let blocks = [];
 
@@ -83,8 +105,8 @@ function getAllBlocks() {
 /**
  * Get a random block out of the available ones
  */
-function getRandomBlock() {
-    let blocks = getAllBlocks();
+function _getRandomBlock() {
+    let blocks = _getAllBlocks();
 
     // Can't select anything from empty
     if(blocks.length < 1)
@@ -98,7 +120,7 @@ function getRandomBlock() {
  */
 const removeBlockGremlin = function() {
     // Find random block
-    let block = getRandomBlock();
+    let block = _getRandomBlock();
 
     // Need a block to remove
     if(block === null)
@@ -109,19 +131,31 @@ const removeBlockGremlin = function() {
     driver.dragAndDrop(block, location);
 };
 
+
+
 /**
  * Execute random block
  */
 const executeBlockGremlin = function() {
 
     // Find random block
-    let block = getRandomBlock();
+    let block = _getRandomBlock();
 
     if(block === null)
         return;
 
     // Run it
     driver.click(block);
+
+    // Close anything opened by accident
+    if(driver.dialog() != undefined)
+    {
+        let btnContainer = driver.dialog().children.find(f => f.children.find(g => g.action === "cancel"));
+
+        if(btnContainer != undefined && btnContainer.children.length > 0){
+            driver.click(btnContainer.children[btnContainer.children.length - 1].center())
+        }
+    }
 }
 
 /**
@@ -129,6 +163,16 @@ const executeBlockGremlin = function() {
  */
 const attachBlockGremlin = function() {
     // Find two compatible blocks
+    let block1 = _getRandomBlock();
+    let block2 = _getRandomBlock();
+
+    // Make sure we found two blocks
+    if(block1 === null || block1 == block2){
+        return;
+    }
+
+    // Make sure they're compatible
+
 
     // Find attach point of second block
 
