@@ -59,17 +59,25 @@ const _inBounds = function(box, point) {
 }
 
 /**
- * Get an array of all usable blocks
+ * Check if a Morph is visible
+ * @param {Morph} f Morph to check
+ * @returns {Boolean} If input is in current view
  */
-function _getAllBlocks(onlyVisible = true) {
+const _inView = (f) =>  _inBounds(driver.ide().currentSprite.scripts.scrollFrame.boundingBox(), f.center());
+
+/**
+ * Get an array of all usable blocks
+ * @param filter Filter to apply to blocks, default is that they are in the current view
+ */
+function _getAllBlocks(filter = _inView) {
     
     let scripts = driver.ide().currentSprite.scripts;
 
     // Determine predicate to use
     let validBlock = undefined;
-    if(onlyVisible)
+    if(filter)
     {
-        validBlock = (f) => (f.blockSpec != undefined && _inBounds(scripts.scrollFrame.boundingBox(), f.center()));
+        validBlock = (f) => (f.blockSpec != undefined && filter(f));
     }
     else
     {
@@ -162,23 +170,25 @@ const executeBlockGremlin = function() {
 /**
  * Attach random blocks
  */
-const attachBlockGremlin = function() {
+const attachCommandBlockGremlin = function() {
+    let {CommandBlockMorph, Point} = driver.globals();
+
     // Find two compatible blocks
-    let block1 = _getRandomBlock();
-    let block2 = _getRandomBlock();
+    let block1 = _getRandomBlock((f) => _inView(f) && f instanceof CommandBlockMorph && typeof f.bottomAttachPoint == 'function');
+    let block2 = _getRandomBlock((f) => _inView(f) && f instanceof CommandBlockMorph && typeof f.topAttachPoint == 'function');
 
     // Make sure we found two blocks
     if(block1 === null || block1 == block2){
         return;
     }
-
-    // Make sure they're compatible
-
-
-    // Find attach point of second block
+ 
+    // Find attach point of block
+    let dropPosition = block1.bottomAttachPoint()
+        .add(new Point(block2.width()/2, block2.height()/2))
+        .subtract(block2.topAttachPoint().subtract(block2.topLeft()));
 
     // Drag them together
-
+    driver.dragAndDrop(block2, dropPosition);
 };
 
 /**
@@ -217,6 +227,7 @@ const gremlinFunctions = [
     executeBlockGremlin,
     addSpriteGremlin,
     switchSpriteGremlin,
+    attachCommandBlockGremlin,
 ];
 
 /**
@@ -226,10 +237,11 @@ const _gremlinDistribution = [
     15, //categoryChangeGremlin 
     1, //projectNameChangeGremlin
     30, //addBlockGremlin
-    15, //removeBlockGremlin
+    10, //removeBlockGremlin
     10, //executeBlockGremlin
     1, //addSpriteGremlin
-    2, //switchSpriteGremlin
+    2, //switchSpriteGremlin,
+    20, //attachCommandBlockGremlin
 ];
 
 /**
