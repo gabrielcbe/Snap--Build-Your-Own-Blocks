@@ -45,6 +45,9 @@ NetsBloxMorph.prototype.openIn = function (world) {
         m.popUpCenteredInWorld(world);
 
         var startTime = Date.now();
+        // Currently, we wait until the ws connection is established before
+        // opening a project. After removing dependency on the ws connection,
+        // we should be able to remove this and open projects w/o any ws conn
         this.sockets.onConnect = function() {
             m.destroy();
             opened = true;
