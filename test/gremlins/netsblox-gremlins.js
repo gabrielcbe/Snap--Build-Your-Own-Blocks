@@ -113,9 +113,10 @@ function _getAllBlocks(filter = _inView) {
 
 /**
  * Get a random block out of the available ones
+ * @param filter Filter to apply to blocks, default is that they are in the current view
  */
-function _getRandomBlock() {
-    let blocks = _getAllBlocks();
+function _getRandomBlock(filter = _inView) {
+    let blocks = _getAllBlocks(filter);
 
     // Can't select anything from empty
     if(blocks.length < 1)
@@ -171,14 +172,15 @@ const executeBlockGremlin = function() {
  * Attach random blocks
  */
 const attachCommandBlockGremlin = function() {
-    let {CommandBlockMorph, Point} = driver.globals();
+    // TODO: Handle blocks with multiple "bottom" attach points like if/else/loops/warp
+    let {CommandBlockMorph, HatBlockMorph, Point} = driver.globals();
 
     // Find two compatible blocks
     let block1 = _getRandomBlock((f) => _inView(f) && f instanceof CommandBlockMorph && typeof f.bottomAttachPoint == 'function');
-    let block2 = _getRandomBlock((f) => _inView(f) && f instanceof CommandBlockMorph && typeof f.topAttachPoint == 'function');
+    let block2 = _getRandomBlock((f) => _inView(f) && f instanceof CommandBlockMorph && !(f instanceof HatBlockMorph) && typeof f.topAttachPoint == 'function');
 
     // Make sure we found two blocks
-    if(block1 === null || block1 == block2){
+    if(block1 === null || block2 === null || block1 == block2){
         return;
     }
  
