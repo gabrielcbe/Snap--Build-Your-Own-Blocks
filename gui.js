@@ -2609,10 +2609,10 @@ IDE_Morph.prototype.cloudMenu = function () {
                                     },
                                     function () {nop(); }, // yield (Chrome)
                                     function () {
-                                        SnapActions.openProject(projectData);
-                                    },
-                                    function () {
-                                        msg.destroy();
+                                        SnapActions.openProject(projectData)
+                                            .then(function() {
+                                                msg.destroy();
+                                            });
                                     }
                                 ]);
                             },
@@ -4349,10 +4349,10 @@ IDE_Morph.prototype.openProjectString = function (str) {
         },
         function () {nop(); }, // yield (bug in Chrome)
         function () {
-            SnapActions.openProject(str);
-        },
-        function () {
-            msg.destroy();
+            SnapActions.openProject(str)
+                .then(function() {
+                    msg.destroy();
+                });
         }
     ]);
 };

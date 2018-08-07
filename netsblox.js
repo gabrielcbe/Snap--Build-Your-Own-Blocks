@@ -420,14 +420,6 @@ NetsBloxMorph.prototype.projectMenu = function () {
         ]);
     }
 
-    menu.items = menu.items.filter(function(item) {
-        var action = item[1];
-        if (myself.room.isGuest() && action === 'save') {
-            return false;
-        }
-        return true;
-    });
-
     var isSavingToCloud = this.source.indexOf('cloud') > -1;
     if (SnapCloud.username && !this.room.isOwner()) {
         item = ['Save a Copy', 'saveACopy'];
@@ -435,13 +427,20 @@ NetsBloxMorph.prototype.projectMenu = function () {
             return item[1];
         }).indexOf('save');
 
-        menu.items.splice(itemIndex+1, 0, item);
+        menu.items.splice(itemIndex+2, 0, item);
     } else if (isSavingToCloud && this.room.hasMultipleRoles()) {
         // Change the label to 'Save Role' if multiple roles
         var saveItem = menu.items.find(function(item) {
             return item[1] === 'save';
         });
         saveItem[0] = localize('Save Role');
+    }
+
+    if (myself.room.isGuest()) {
+        var saveItemIndex = menu.items.map(function(item) {
+            return item[1];
+        }).indexOf('save');
+        menu.items.splice(saveItemIndex, 2);
     }
 
     item = [
@@ -590,7 +589,7 @@ NetsBloxMorph.prototype.openRoomString = function (str) {
     });
     role = room.children[0].attributes.name;
 
-    this.showMessage('Opening project...', 3);
+    var msg = this.showMessage('Opening project...');
     // Create a room with the new name
     this.newRole(role);
 
@@ -610,6 +609,7 @@ NetsBloxMorph.prototype.openRoomString = function (str) {
             ].join('');
             return SnapActions.openProject(projectXml)
                 .then(function () {
+                    msg.destroy();
                     myself.sockets.updateRoomInfo();
                 });
         });
