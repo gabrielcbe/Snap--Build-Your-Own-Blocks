@@ -173,19 +173,30 @@ const executeBlockGremlin = function() {
  */
 const attachCommandBlockGremlin = function() {
     // TODO: Handle blocks with multiple "bottom" attach points like if/else/loops/warp
-    let {CommandBlockMorph, HatBlockMorph, Point} = driver.globals();
+    let {CommandBlockMorph, HatBlockMorph, CSlotMorph, Point} = driver.globals();
 
     // Find two compatible blocks
     let block1 = _getRandomBlock((f) => _inView(f) && f instanceof CommandBlockMorph && typeof f.bottomAttachPoint == 'function');
     let block2 = _getRandomBlock((f) => _inView(f) && f instanceof CommandBlockMorph && !(f instanceof HatBlockMorph) && typeof f.topAttachPoint == 'function');
 
-    // Make sure we found two blocks
+    // Make sure we found two distinct blocks
     if(block1 === null || block2 === null || block1 == block2){
         return;
     }
- 
+    
+    // Find possible drop points
+    let dropPoints = [block1.bottomAttachPoint()];
+    
+    // Include C Slots
+    block1.inputs().filter(f => f instanceof CSlotMorph).forEach(slot => {
+        dropPoints.push(slot.slotAttachPoint());
+    });
+
+    // Pick a random one
+    let dropPoint = dropPoints[Math.floor(Math.random() * dropPoints.length)];
+
     // Find attach point of block
-    let dropPosition = block1.bottomAttachPoint()
+    let dropPosition = dropPoint
         .add(new Point(block2.width()/2, block2.height()/2))
         .subtract(block2.topAttachPoint().subtract(block2.topLeft()));
 
@@ -216,6 +227,20 @@ const switchSpriteGremlin = function() {
     // Click random one
     let sprite = sprites[Math.floor(Math.random() * sprites.length)];
     driver.click(sprite.center());
+};
+
+/**
+ * Drag a (compatible) block into the input of another block
+ */
+const blockAsInputGremlin = function() {
+
+};
+
+/**
+ * Sets a numeric input on a block
+ */
+const setNumericInputGremlin = function() {
+
 };
 
 /**
