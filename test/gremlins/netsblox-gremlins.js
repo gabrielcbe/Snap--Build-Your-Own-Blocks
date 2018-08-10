@@ -1,4 +1,12 @@
 /**
+ * Log a message from a gremlin
+ * @param message The message to be logged
+ */
+const _gremlinLog = function(message) {
+    console.log(_gremlinLog.caller.name + ": " + message);
+}
+
+/**
  * Randomly changes the selected category
  */
 const categoryChangeGremlin = function() {
@@ -33,7 +41,7 @@ const addBlockGremlin = function() {
     // Make sure we're not, for example, in the custom tab with no custom blocks
     if(blocks.length == 0)
     {
-        console.log("No blocks available :(");
+        _gremlinLog("No blocks available :(");
         return;
     }
 
@@ -59,9 +67,9 @@ const _inBounds = function(box, point) {
 }
 
 /**
- * Check if a Morph is visible
+ * Check if a Morph is a visible part of the script
  * @param {Morph} f Morph to check
- * @returns {Boolean} If input is in current view
+ * @returns {Boolean} If input is in script view
  */
 const _inView = (f) =>  _inBounds(driver.ide().currentSprite.scripts.scrollFrame.boundingBox(), f.center());
 
@@ -134,8 +142,10 @@ const removeBlockGremlin = function() {
 
     // Need a block to remove
     if(block === null)
+    {
+        _gremlinLog("No blocks available :(");
         return;
-
+    }
     // Drag it out
     let location = driver.palette().center();
     driver.dragAndDrop(block, location);
@@ -152,8 +162,10 @@ const executeBlockGremlin = function() {
     let block = _getRandomBlock();
 
     if(block === null)
+    {
+        _gremlinLog("No blocks available :(");
         return;
-
+    }
     // Run it
     driver.click(block);
 
@@ -172,7 +184,6 @@ const executeBlockGremlin = function() {
  * Attach random blocks
  */
 const attachCommandBlockGremlin = function() {
-    // TODO: Handle blocks with multiple "bottom" attach points like if/else/loops/warp
     let {CommandBlockMorph, HatBlockMorph, CSlotMorph, Point} = driver.globals();
 
     // Find two compatible blocks
@@ -181,6 +192,15 @@ const attachCommandBlockGremlin = function() {
 
     // Make sure we found two distinct blocks
     if(block1 === null || block2 === null || block1 == block2){
+        if(block1 == null)
+            _gremlinLog("Couldn't find top block");
+
+        if(block2 == null)
+            _gremlinLog("Couldn't find bottom block");
+
+        else if(block1 == block2)
+            _gremlinLog("Couldn't find two blocks");
+
         return;
     }
     
@@ -240,6 +260,54 @@ const blockAsInputGremlin = function() {
  * Sets a numeric input on a block
  */
 const setNumericInputGremlin = function() {
+    const {Point} = driver.globals();
+    
+    let checkNumeric = f => f.isNumeric === true;
+
+    // Find compatible block
+    let block = _getRandomBlock((f) => _inView(f) && f.inputs() != [] && 
+        f.inputs().some(i => checkNumeric(i)));
+
+    // Make sure we found a block
+    if(block === null){
+        _gremlinLog("No blocks found");
+        return;
+    }
+
+    // Find numeric inputs
+    let inputs = block.inputs().filter(
+        i => _inView(i) && checkNumeric(i)
+    );
+
+    // Make sure we have a valid input
+    if(inputs.length === 0)
+    {
+        _gremlinLog("No valid input found");
+        return;
+    }
+
+    // Pick a random one
+    let input = inputs[Math.floor(Math.random() * inputs.length)];
+
+    // Find position of input
+    let clickPosition = input.center();
+
+    // Determine random value
+    let value = driver.ide().stage.width() * (Math.random() * 2 - 1);
+    
+    // Rounding to create a variety of answers
+    value = value.toFixed(Math.floor(Math.random() * 6));
+    
+    // Click on input field
+    driver.mouseDown(clickPosition);
+    driver.mouseUp(clickPosition); 
+
+    // Set input
+    driver.keys(value);    
+
+    // Click off of it
+    driver.mouseDown(clickPosition.add(new Point(20,20)));
+    driver.mouseUp(clickPosition.add(new Point(20,20)));     
 
 };
 
@@ -255,6 +323,7 @@ const gremlinFunctions = [
     addSpriteGremlin,
     switchSpriteGremlin,
     attachCommandBlockGremlin,
+    setNumericInputGremlin,
 ];
 
 /**
@@ -269,6 +338,7 @@ const _gremlinDistribution = [
     1, //addSpriteGremlin
     2, //switchSpriteGremlin,
     20, //attachCommandBlockGremlin
+    50, //setNumericInputGremlin
 ];
 
 /**
