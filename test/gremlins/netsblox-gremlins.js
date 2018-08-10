@@ -33,10 +33,10 @@ const projectNameChangeGremlin = function() {
  * Add a random block at a random position, out of the options in the current category
  */
 const addBlockGremlin = function() {    
-    const {Point, CommandBlockMorph} = driver.globals();
+    const {Point, CommandBlockMorph, ReporterBlockMorph} = driver.globals();
     
     // Get block to add
-    let blocks = driver.palette().contents.children.filter(f => f instanceof CommandBlockMorph);
+    let blocks = driver.palette().contents.children.filter(f => f instanceof CommandBlockMorph || f instanceof ReporterBlockMorph);
 
     // Make sure we're not, for example, in the custom tab with no custom blocks
     if(blocks.length == 0)
@@ -186,7 +186,7 @@ const attachCommandBlockGremlin = function() {
 
     // Find two compatible blocks
     let block1 = _getRandomBlock((f) => _inView(f) && f instanceof CommandBlockMorph && typeof f.bottomAttachPoint == 'function');
-    let block2 = _getRandomBlock((f) => _inView(f) && f instanceof CommandBlockMorph && typeof f.topAttachPoint == 'function');
+    let block2 = _getRandomBlock((f) => _inView(f) && f instanceof CommandBlockMorph && typeof f.topAttachPoint == 'function' && f != block1);
 
     // Make sure we found two distinct blocks
     if(block1 === null || block2 === null || block1 == block2){
