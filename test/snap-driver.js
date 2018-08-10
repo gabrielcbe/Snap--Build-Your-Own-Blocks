@@ -99,16 +99,8 @@ SnapDriver.prototype.selectSprite = function(name) {
 };
 
 SnapDriver.prototype.keys = function(text) {
-    let world = this.world();
-    let keyboard = world.keyboardReceiver;
-
     text.split('').forEach(letter => {
-        const event = {
-            keyCode: letter.charCodeAt(0)
-        };
-        world.currentKey = event.keyCode;
-        keyboard.processKeyPress(event);
-        world.currentKey = null;
+        this.pressKey(letter.charCodeAt(0));
     });
 };
 
@@ -499,3 +491,27 @@ SnapDriver.prototype.connect = function() {
     delete this.ide().sockets.onClose;
     this.ide().sockets.onClose();
 };
+
+SnapDriver.prototype.pressKey = function(letter) {
+    let world = this.world();
+    let keyboard = world.keyboardReceiver;
+    
+    const event = {
+        keyCode: letter
+    };
+    world.currentKey = event.keyCode;
+    keyboard.processKeyPress(event);
+    world.currentKey = null;
+}
+
+SnapDriver.prototype.keyDown = function(letter) {
+    let world = this.world();
+    let keyboard = world.keyboardReceiver;
+    
+    const event = {
+        keyCode: letter
+    };
+    world.currentKey = event.keyCode;
+    keyboard.processKeyDown(event);
+    world.currentKey = null;
+}

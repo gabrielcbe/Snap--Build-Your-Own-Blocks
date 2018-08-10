@@ -59,11 +59,9 @@ const addBlockGremlin = function() {
  * @param {Point} point 
  */
 const _inBounds = function(box, point) {
-    let {top, left} = {top: box.origin.y, left: box.origin.y};
-    let {bottom, right} = {bottom: box.corner.y, right: box.corner.y};
     let {x, y} = point;
 
-    return x >= left && y >= top && x <= right && y <= bottom;
+    return x >= box.left() && y >= box.top() && x <= box.right() && y <= box.bottom();
 }
 
 /**
@@ -184,11 +182,11 @@ const executeBlockGremlin = function() {
  * Attach random blocks
  */
 const attachCommandBlockGremlin = function() {
-    let {CommandBlockMorph, HatBlockMorph, CSlotMorph, Point} = driver.globals();
+    let {CommandBlockMorph, CSlotMorph, Point} = driver.globals();
 
     // Find two compatible blocks
     let block1 = _getRandomBlock((f) => _inView(f) && f instanceof CommandBlockMorph && typeof f.bottomAttachPoint == 'function');
-    let block2 = _getRandomBlock((f) => _inView(f) && f instanceof CommandBlockMorph && !(f instanceof HatBlockMorph) && typeof f.topAttachPoint == 'function');
+    let block2 = _getRandomBlock((f) => _inView(f) && f instanceof CommandBlockMorph && typeof f.topAttachPoint == 'function');
 
     // Make sure we found two distinct blocks
     if(block1 === null || block2 === null || block1 == block2){
@@ -221,7 +219,7 @@ const attachCommandBlockGremlin = function() {
         .subtract(block2.topAttachPoint().subtract(block2.topLeft()));
 
     // Drag them together
-    driver.dragAndDrop(block2, dropPosition);
+    driver.dragAndDrop(block2, dropPosition.subtract(block2.center().subtract(block2.topLeft())), block2.topLeft().add(new Point(1,1)));
 };
 
 /**
