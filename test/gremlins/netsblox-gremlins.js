@@ -297,15 +297,13 @@ const setNumericInputGremlin = function() {
     value = value.toFixed(Math.floor(Math.random() * 6));
     
     // Click on input field
-    driver.mouseDown(clickPosition);
-    driver.mouseUp(clickPosition); 
+    driver.click(clickPosition);
 
     // Set input
     driver.keys(value);    
 
     // Click off of it
-    driver.mouseDown(clickPosition.add(new Point(20,20)));
-    driver.mouseUp(clickPosition.add(new Point(20,20)));     
+    driver.click(clickPosition.add(new Point(20,20))); 
 
 };
 

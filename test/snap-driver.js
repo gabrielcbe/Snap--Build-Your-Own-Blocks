@@ -503,15 +503,3 @@ SnapDriver.prototype.pressKey = function(letter) {
     keyboard.processKeyPress(event);
     world.currentKey = null;
 }
-
-SnapDriver.prototype.keyDown = function(letter) {
-    let world = this.world();
-    let keyboard = world.keyboardReceiver;
-    
-    const event = {
-        keyCode: letter
-    };
-    world.currentKey = event.keyCode;
-    keyboard.processKeyDown(event);
-    world.currentKey = null;
-}
