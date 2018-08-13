@@ -320,10 +320,16 @@ const setNumericInputGremlin = function() {
     let value = driver.ide().stage.width() * (Math.random() * 2 - 1);
     
     // Rounding to create a variety of answers
-    value = value.toFixed(Math.floor(Math.random() * 6));
+    value = value.toFixed(Math.floor(Math.random() * 6)).toString();
     
     // Click on input field
     driver.click(clickPosition);
+    
+    // TODO: Find why simulated clicks don't select properly
+    input.setContents('');
+
+    // Delete existing
+    driver.keyDown(8);
 
     // Set input
     driver.keys(value);    
@@ -353,6 +359,9 @@ const setStringInputGremlin = function() {
 
     // Click on input field
     driver.click(clickPosition);
+
+    // TODO: Find why simulated clicks don't select properly
+    input.setContents('');
 
     // Set input
     driver.keys(_getRandomString(20));    
@@ -406,12 +415,17 @@ const setDropDownInputGremlin = function() {
 };
 
 /**
- * Drag a (compatible) block into the input of another block
+ * Drag a reporter block into a compatible input of another block
  */
 const blockAsInputGremlin = function() {
+    let {CommandBlockMorph, ReporterBlockMorph, Point} = driver.globals();
+
+    // Find two compatible blocks
+    let block1 = _getRandomBlock((f) => _inView(f) && f instanceof CommandBlockMorph &&
+        f.inputs() != [] && f.inputs().some(i => i));
+    let block2 = _getRandomBlock((f) => _inView(f) && f instanceof ReporterBlockMorph && f != block1);
 
 };
-
 /**
  * List of available gremlin types
  */
@@ -427,6 +441,7 @@ const gremlinFunctions = [
     setNumericInputGremlin,
     setStringInputGremlin,
     setDropDownInputGremlin,
+    blockAsInputGremlin,
 ];
 
 /**
@@ -444,6 +459,7 @@ const _gremlinDistribution = [
     50, //setNumericInputGremlin
     50, //setStringInputGremln
     50, //setDropDownInputGremlin
+    50, //blockAsInputGremlin
 ];
 
 /**
