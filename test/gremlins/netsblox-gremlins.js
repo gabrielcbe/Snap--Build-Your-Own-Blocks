@@ -362,6 +362,50 @@ const setStringInputGremlin = function() {
 };
 
 /**
+ * Finds a drop-down input and picks a random option
+ */
+const setDropDownInputGremlin = function() {
+    const {Point, MenuMorph, MenuItemMorph} = driver.globals();
+    
+    let checkDropdown = f => f.choices !== null && f.choices !== undefined;
+    let input = _getRandomInput(_inView, checkDropdown);
+
+    // Make sure we found something
+    if(input == null)
+    {
+        _gremlinLog("No compatible input found.");
+        return;
+    }
+
+    // Find position of input
+    let clickPosition = new Point(input.right() - 2, input.center().y);
+
+    // Click on input field
+    driver.click(clickPosition);
+
+    // Find menu options
+    let menu = driver.world().children.find(f => f instanceof MenuMorph);
+    if(menu == undefined || menu.children == undefined)
+    {
+        _gremlinLog("No menu found.");
+        return;
+    }
+
+    let menuOptions = menu.children.filter(f => f instanceof MenuItemMorph);
+    if(menuOptions.length < 1)
+    {
+        _gremlinLog("No menu options found.");
+        return;
+    }
+
+    // Make a choice
+    let menuOption = menuOptions[Math.floor(Math.random() * menuOptions.length)];
+
+    // Click it
+    driver.click(menuOption.center()); 
+};
+
+/**
  * Drag a (compatible) block into the input of another block
  */
 const blockAsInputGremlin = function() {
@@ -382,6 +426,7 @@ const gremlinFunctions = [
     attachCommandBlockGremlin,
     setNumericInputGremlin,
     setStringInputGremlin,
+    setDropDownInputGremlin,
 ];
 
 /**
@@ -398,6 +443,7 @@ const _gremlinDistribution = [
     20, //attachCommandBlockGremlin
     50, //setNumericInputGremlin
     50, //setStringInputGremln
+    50, //setDropDownInputGremlin
 ];
 
 /**
