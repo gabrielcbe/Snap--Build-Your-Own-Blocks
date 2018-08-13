@@ -1,9 +1,31 @@
 /**
+ * @callback Filter
+ * @param {*} input
+ * @returns {Boolean} If the input matches the filter
+ */
+
+/**
  * Log a message from a gremlin
  * @param message The message to be logged
  */
-const _gremlinLog = function(message) {
+function _gremlinLog(message) {
     console.log(_gremlinLog.caller.name + ": " + message);
+}
+
+/**
+ * Generates a random Unicode string
+ * @param {Number} maxLength Maximum length of string
+ * @param {Number=} minLength Minimum length of string
+ */
+function _getRandomString(maxLength, minLength = 1){
+    let newName = "";
+    let newLength = Math.random() * (maxLength - minLength) + minLength;
+
+    for (let i = 0; i < newLength; i++) {
+        newName += String.fromCharCode("0x" + Math.floor(Math.random() * 65503 + 32).toString(16));
+    }
+
+    return newName;
 }
 
 /**
@@ -18,13 +40,7 @@ const categoryChangeGremlin = function() {
  * Randomly changes the name of the project to a Unicode string
  */
 const projectNameChangeGremlin = function() {
-    let newName = "";
-    let newLength = Math.random() * 20;
-
-    for (let i = 0; i < newLength; i++) {
-        newName += String.fromCharCode("0x" + Math.floor(Math.random() * 65503 + 32).toString(16));
-    }
-
+    let newName = _getRandomString(20);
     driver.setProjectNameNoConfirm(newName);
     driver.selectTab('scripts');
 };
@@ -73,7 +89,7 @@ const _inView = (f) =>  _inBounds(driver.ide().currentSprite.scripts.scrollFrame
 
 /**
  * Get an array of all usable blocks
- * @param filter Filter to apply to blocks, default is that they are in the current view
+ * @param {Filter} filter Filter to apply to blocks, default is that they are in the current view
  */
 function _getAllBlocks(filter = _inView) {
     
@@ -130,6 +146,38 @@ function _getRandomBlock(filter = _inView) {
 
     return blocks[Math.floor(Math.random() * blocks.length)];
 }
+
+/**
+ * Find a random input on a random block
+ * @param {Filter} blockFilter Filter to apply to blocks
+ * @param {Filter} inputFilter Filter to apply to inputs in blocks
+ */
+function _getRandomInput(blockFilter = _inView, inputFilter = _inView) {
+    // Find block with desired inputs
+    let block = _getRandomBlock((f) => blockFilter(f) && // Is the block type we want
+        f.inputs() != [] && // Has inputs
+        f.inputs().some(i => _inView(i) && inputFilter(i))); // Has an input we want
+
+    // Make sure we found a block
+    if(block === null){
+        _gremlinLog("No blocks found");
+        return;
+    }
+
+    // Find visible inputs
+    let inputs = block.inputs().filter(
+        i => _inView(i) && inputFilter(i) // Restrict to desired block type
+    );
+
+    // Make sure we have a valid input
+    if(inputs.length === 0)
+    {
+        return null;
+    }
+
+    // Pick a random one
+    return inputs[Math.floor(Math.random() * inputs.length)];
+};
 
 /**
  * Remove random blocks
@@ -247,42 +295,7 @@ const switchSpriteGremlin = function() {
     driver.click(sprite.center());
 };
 
-/**
- * Drag a (compatible) block into the input of another block
- */
-const blockAsInputGremlin = function() {
 
-};
-
-/**
- * Find a random input on a random block
- */
-const _getRandomInput = function(blockFilter = _inView, inputFilter = _inView) {
-    // Find block with desired inputs
-    let block = _getRandomBlock((f) => blockFilter(f) && // Is the block type we want
-        f.inputs() != [] && // Has inputs
-        f.inputs().some(i => _inView(i) && inputFilter(i))); // Has an input we want
-
-    // Make sure we found a block
-    if(block === null){
-        _gremlinLog("No blocks found");
-        return;
-    }
-
-    // Find visible inputs
-    let inputs = block.inputs().filter(
-        i => _inView(i) && inputFilter(i) // Restrict to desired block type
-    );
-
-    // Make sure we have a valid input
-    if(inputs.length === 0)
-    {
-        return null;
-    }
-
-    // Pick a random one
-    return inputs[Math.floor(Math.random() * inputs.length)];
-};
 
 /**
  * Sets a numeric input on a block
@@ -320,6 +333,42 @@ const setNumericInputGremlin = function() {
 };
 
 /**
+ * Sets a non-numeric input on a block
+ */
+const setStringInputGremlin = function() {
+    const {Point} = driver.globals();
+    
+    let checkString = f => f.isNumeric === false && (f.choices === null || f.choices == undefined);
+    let input = _getRandomInput(_inView, checkString);
+
+    // Make sure we found something
+    if(input == null)
+    {
+        _gremlinLog("No compatible input found.");
+        return;
+    }
+
+    // Find position of input
+    let clickPosition = input.center();
+
+    // Click on input field
+    driver.click(clickPosition);
+
+    // Set input
+    driver.keys(_getRandomString(20));    
+
+    // Click off of it
+    driver.click(clickPosition.add(new Point(20,20))); 
+};
+
+/**
+ * Drag a (compatible) block into the input of another block
+ */
+const blockAsInputGremlin = function() {
+
+};
+
+/**
  * List of available gremlin types
  */
 const gremlinFunctions = [
@@ -332,7 +381,7 @@ const gremlinFunctions = [
     switchSpriteGremlin,
     attachCommandBlockGremlin,
     setNumericInputGremlin,
-    //setStringInputGremln,
+    setStringInputGremlin,
 ];
 
 /**
@@ -348,7 +397,7 @@ const _gremlinDistribution = [
     2, //switchSpriteGremlin,
     20, //attachCommandBlockGremlin
     50, //setNumericInputGremlin
-    //50, //setStringInputGremln
+    50, //setStringInputGremln
 ];
 
 /**
