@@ -255,16 +255,13 @@ const blockAsInputGremlin = function() {
 };
 
 /**
- * Sets a numeric input on a block
+ * Find a random input on a random block
  */
-const setNumericInputGremlin = function() {
-    const {Point} = driver.globals();
-    
-    let checkNumeric = f => f.isNumeric === true;
-
-    // Find compatible block
-    let block = _getRandomBlock((f) => _inView(f) && f.inputs() != [] && 
-        f.inputs().some(i => checkNumeric(i)));
+const _getRandomInput = function(blockFilter = _inView, inputFilter = _inView) {
+    // Find block with desired inputs
+    let block = _getRandomBlock((f) => blockFilter(f) && // Is the block type we want
+        f.inputs() != [] && // Has inputs
+        f.inputs().some(i => _inView(i) && inputFilter(i))); // Has an input we want
 
     // Make sure we found a block
     if(block === null){
@@ -272,20 +269,36 @@ const setNumericInputGremlin = function() {
         return;
     }
 
-    // Find numeric inputs
+    // Find visible inputs
     let inputs = block.inputs().filter(
-        i => _inView(i) && checkNumeric(i)
+        i => _inView(i) && inputFilter(i) // Restrict to desired block type
     );
 
     // Make sure we have a valid input
     if(inputs.length === 0)
     {
-        _gremlinLog("No valid input found");
-        return;
+        return null;
     }
 
     // Pick a random one
-    let input = inputs[Math.floor(Math.random() * inputs.length)];
+    return inputs[Math.floor(Math.random() * inputs.length)];
+};
+
+/**
+ * Sets a numeric input on a block
+ */
+const setNumericInputGremlin = function() {
+    const {Point} = driver.globals();
+    
+    let checkNumeric = f => f.isNumeric === true;
+    let input = _getRandomInput(_inView, checkNumeric);
+
+    // Make sure we found something
+    if(input == null)
+    {
+        _gremlinLog("No compatible input found.");
+        return;
+    }
 
     // Find position of input
     let clickPosition = input.center();
@@ -304,7 +317,6 @@ const setNumericInputGremlin = function() {
 
     // Click off of it
     driver.click(clickPosition.add(new Point(20,20))); 
-
 };
 
 /**
@@ -320,6 +332,7 @@ const gremlinFunctions = [
     switchSpriteGremlin,
     attachCommandBlockGremlin,
     setNumericInputGremlin,
+    //setStringInputGremln,
 ];
 
 /**
@@ -335,6 +348,7 @@ const _gremlinDistribution = [
     2, //switchSpriteGremlin,
     20, //attachCommandBlockGremlin
     50, //setNumericInputGremlin
+    //50, //setStringInputGremln
 ];
 
 /**
