@@ -22,7 +22,7 @@ NetCloud.prototype.login = function (
             __h: password,
             __u: username,
             remember: remember,
-            socketId: SnapCloud.clientId
+            clientId: SnapCloud.clientId
         }),
         myself = this;
 

@@ -120,6 +120,7 @@ WebSocketManager.MessageHandlers = {
             function() {
                 myself.sendMessage({
                     type: 'elevate-permissions',
+                    projectId: msg.projectId,
                     username: username
                 });
             }
