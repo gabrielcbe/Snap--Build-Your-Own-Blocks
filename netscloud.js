@@ -628,9 +628,6 @@ NetCloud.prototype.request = function (url, dict) {
 };
 
 NetCloud.prototype.setLocalState = function (projectId, roleId) {
-    if (!projectId || !roleId) debugger;
-    if (projectId === 'null') debugger;
-    if (projectId !== this.projectId) console.log('setting projectId to', projectId);
     this.projectId = projectId;
     this.roleId = roleId;
 };
