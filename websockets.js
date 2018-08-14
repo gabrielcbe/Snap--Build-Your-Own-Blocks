@@ -39,10 +39,7 @@ WebSocketManager.MessageHandlers = {
         }
     },
 
-    // Receive an assigned uuid
-    'uuid': function(msg) {
-        this.uuid = msg.body;
-        SnapActions.id = this.uuid;
+    'connected': function() {
         this.onConnect();
     },
 
@@ -256,7 +253,10 @@ WebSocketManager.prototype._connectWebSocket = function() {
         self.lastSocketActivity = Date.now();
         self.connected = true;
 
-        self.onConnect(self.hasConnected);
+        self.sendMessage({
+            type: 'set-uuid',
+            clientId: SnapCloud.clientId
+        });
         self.hasConnected = true;
     };
 
@@ -398,7 +398,6 @@ WebSocketManager.prototype.onConnect = function() {
     var myself = this;
     return this.updateRoomInfo()
         .then(function() {
-            myself.sendMessage({type: 'set-state', body: SnapCloud.getClientState()});
             while (myself.messages.length) {
                 myself.websocket.send(myself.messages.shift());
             }
