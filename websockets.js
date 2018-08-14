@@ -396,12 +396,12 @@ WebSocketManager.prototype.deserializeData = function(dataList) {
 
 WebSocketManager.prototype.onConnect = function() {
     var myself = this;
+    SnapActions.requestMissingActions();
     return this.updateRoomInfo()
         .then(function() {
             while (myself.messages.length) {
                 myself.websocket.send(myself.messages.shift());
             }
-            myself.inActionRequest = false;
         });
 };
 
@@ -427,10 +427,8 @@ WebSocketManager.prototype.updateRoomInfo = function() {
     var myself = this,
         state = this.getClientState();
 
-    this.inActionRequest = true;
     return SnapCloud.setClientState(state.room, state.role, state.actionId)
         .catch(function() {
-            myself.inActionRequest = false;
             myself.ide.cloudError().apply(null, arguments);
         });
 };
