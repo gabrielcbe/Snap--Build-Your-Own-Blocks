@@ -701,7 +701,8 @@ NetCloud.prototype.setClientState = function (room, role, actionId) {
             return result;
         })
         .catch(function(req) {
-            throw new Error(req.responseText);
+            var connError = 'Could not connect to ' + myself.url;
+            throw new Error(req.responseText || connError);
         });
 };
 
