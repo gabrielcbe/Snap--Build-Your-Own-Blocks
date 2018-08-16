@@ -1,8 +1,4 @@
-/**
- * @callback Filter
- * @param {*} input
- * @returns {Boolean} If the input matches the filter
- */
+
 
 /**
  * Log a message from a gremlin
@@ -420,11 +416,24 @@ const setDropDownInputGremlin = function() {
 const blockAsInputGremlin = function() {
     let {CommandBlockMorph, ReporterBlockMorph, Point} = driver.globals();
 
-    // Find two compatible blocks
-    let block1 = _getRandomBlock((f) => _inView(f) && f instanceof CommandBlockMorph &&
-        f.inputs() != [] && f.inputs().some(i => i));
-    let block2 = _getRandomBlock((f) => _inView(f) && f instanceof ReporterBlockMorph && f != block1);
+    // Find compatible block and input
+    let block = _getRandomBlock((f) => _inView(f) && f instanceof ReporterBlockMorph);
+    let input = _getRandomInput((f) => _inView(f) && f != block); // An input not on the block we picked
+    
+    if(block == null)
+    {
+        _gremlinLog("No block found");
+        return;
+    }
 
+    if(input == null)
+    {
+        _gremlinLog("No input found");
+        return;
+    }
+    
+    let location = input.center();
+    driver.dragAndDrop(block, location);
 };
 /**
  * List of available gremlin types
@@ -449,17 +458,17 @@ const gremlinFunctions = [
  */
 const _gremlinDistribution = [
     15, //categoryChangeGremlin 
-    1, //projectNameChangeGremlin
+    0.25, //projectNameChangeGremlin
     30, //addBlockGremlin
     10, //removeBlockGremlin
     10, //executeBlockGremlin
     1, //addSpriteGremlin
     2, //switchSpriteGremlin,
     20, //attachCommandBlockGremlin
-    50, //setNumericInputGremlin
-    50, //setStringInputGremln
-    50, //setDropDownInputGremlin
-    50, //blockAsInputGremlin
+    20, //setNumericInputGremlin
+    20, //setStringInputGremln
+    20, //setDropDownInputGremlin
+    20, //blockAsInputGremlin
 ];
 
 /**
@@ -478,3 +487,9 @@ const getGremlinDistribution = function(){
 
     return distribution;
 }
+
+/**
+ * @callback Filter
+ * @param {*} input
+ * @returns {Boolean} If the input matches the filter
+ */
