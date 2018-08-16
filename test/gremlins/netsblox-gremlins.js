@@ -459,16 +459,16 @@ const gremlinFunctions = [
 const _gremlinDistribution = [
     15, //categoryChangeGremlin 
     0.25, //projectNameChangeGremlin
-    30, //addBlockGremlin
+    35, //addBlockGremlin
     10, //removeBlockGremlin
-    10, //executeBlockGremlin
+    20, //executeBlockGremlin
     1, //addSpriteGremlin
     2, //switchSpriteGremlin,
-    20, //attachCommandBlockGremlin
-    20, //setNumericInputGremlin
-    20, //setStringInputGremln
-    20, //setDropDownInputGremlin
-    20, //blockAsInputGremlin
+    25, //attachCommandBlockGremlin
+    25, //setNumericInputGremlin
+    25, //setStringInputGremln
+    25, //setDropDownInputGremlin
+    25, //blockAsInputGremlin
 ];
 
 /**
