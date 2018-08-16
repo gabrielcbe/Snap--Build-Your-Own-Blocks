@@ -267,7 +267,7 @@ const attachCommandBlockGremlin = function() {
         .subtract(block2.topAttachPoint().subtract(block2.topLeft()));
 
     // Drag them together
-    driver.dragAndDrop(block2, dropPosition.subtract(block2.center().subtract(block2.topLeft())), block2.topLeft().add(new Point(1,1)));
+    driver.dragAndDrop(block2, dropPosition);
 };
 
 /**
