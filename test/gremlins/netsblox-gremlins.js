@@ -131,14 +131,16 @@ function _getAllBlocks(filter = _inView) {
 
 /**
  * Get a random block out of the available ones
- * @param filter Filter to apply to blocks, default is that they are in the current view
+ * @param {Filter} filter Filter to apply to blocks, default is that they are in the current view
  */
 function _getRandomBlock(filter = _inView) {
     let blocks = _getAllBlocks(filter);
 
     // Can't select anything from empty
     if(blocks.length < 1)
+    {
         return null;
+    }
 
     return blocks[Math.floor(Math.random() * blocks.length)];
 }
@@ -291,8 +293,6 @@ const switchSpriteGremlin = function() {
     driver.click(sprite.center());
 };
 
-
-
 /**
  * Sets a numeric input on a block
  */
@@ -435,6 +435,49 @@ const blockAsInputGremlin = function() {
     let location = input.center();
     driver.dragAndDrop(block, location);
 };
+
+/**
+ * Add a message type
+ */
+const addMessageGremlin = function() {
+
+};
+
+/**
+ * Remove a message type
+ */
+const removeMessageGremlin = function() {
+
+};
+
+/**
+ * Add a role type
+ */
+const addRoleGremlin = function() {
+
+};
+
+/**
+ * Remove a role type
+ */
+const removeRoleGremlin = function() {
+
+};
+
+/**
+ * Move to a different role and wait
+ */
+const switchRoleGremlin = function() {
+
+};
+
+/**
+ * Move to a different role and wait
+ */
+const renameRoleGremlin = function() {
+
+};
+
 /**
  * List of available gremlin types
  */
