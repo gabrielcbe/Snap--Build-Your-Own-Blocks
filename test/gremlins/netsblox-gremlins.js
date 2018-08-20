@@ -479,6 +479,32 @@ const renameRoleGremlin = function() {
 };
 
 /**
+ * Undoes and then redoes a number of actions
+ */
+const undoRedoGremlin = function() {
+    const {ScrollFrameMorph, AlignmentMorph} = driver.globals();
+
+    let numUndos = Math.floor(Math.random() * 10);
+    let numRedos = Math.floor(Math.random() * numUndos); // Can't redo more than you've undone
+
+    // Find buttons
+    let ide = driver.ide();
+    let alignment = ide.children.find(f => f instanceof ScrollFrameMorph && f.children.some(c => c instanceof AlignmentMorph)).children.find(f => f instanceof AlignmentMorph);
+    let undoButton = alignment.children.find(f => f.labelString.name == "turnBack");
+    let redoButton = alignment.children.find(f => f.labelString.name == "turnForward");
+
+    for (let i = 0; i < numUndos; i++) {
+        _gremlinLog("Undoing!");
+        driver.click(undoButton);
+    }
+
+    for (let i = 0; i < numRedos; i++) {
+        _gremlinLog("Redoing!");
+        driver.click(redoButton);        
+    }
+};
+
+/**
  * List of available gremlin types
  */
 const gremlinFunctions = [
@@ -494,6 +520,7 @@ const gremlinFunctions = [
     setStringInputGremlin,
     setDropDownInputGremlin,
     blockAsInputGremlin,
+    undoRedoGremlin,
 ];
 
 /**
@@ -512,6 +539,7 @@ const _gremlinDistribution = [
     25, //setStringInputGremln
     25, //setDropDownInputGremlin
     25, //blockAsInputGremlin
+    5, //undoRedoGremlin
 ];
 
 /**
