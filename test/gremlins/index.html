@@ -43,8 +43,8 @@
                     .delay(100) // 50 ms delay
                     .distribution(getGremlinDistribution()) // distribution defined in other file
                 );
-
-                horde.unleash();
+                
+                horde.unleash({ nb: Infinity });
             });
       }
 
