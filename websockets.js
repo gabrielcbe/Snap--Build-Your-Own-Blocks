@@ -39,10 +39,7 @@ WebSocketManager.MessageHandlers = {
         }
     },
 
-    // Receive an assigned uuid
-    'uuid': function(msg) {
-        this.uuid = msg.body;
-        SnapActions.id = this.uuid;
+    'connected': function() {
         this.onConnect();
     },
 
@@ -77,12 +74,7 @@ WebSocketManager.MessageHandlers = {
 
     // Update on the current roles at the given room
     'room-roles': function(msg) {
-        this.ide.room.update(
-            msg.owner,
-            msg.name,
-            msg.roles,
-            msg.collaborators
-        );
+        this.ide.room.onRoomStateUpdate(msg);
     },
 
     'close-invite': function(msg) {
@@ -94,7 +86,7 @@ WebSocketManager.MessageHandlers = {
 
     // Receive an invite to join a room
     'room-invitation': function(msg) {
-        this.ide.room.promptInvite(msg);
+        this.ide.room.promptInvite(msg.id, msg.role, msg.roomName, msg.inviter);
     },
 
     'collab-invitation': function(msg) {
@@ -108,8 +100,9 @@ WebSocketManager.MessageHandlers = {
         this.ide.newProject();
     },
 
-    'project-fork': function() {
-        this.ide.showMessage('You have been evicted from the room.\nYou are now the owner.');
+    'evicted': function() {
+        this.ide.showMessage('You have been evicted from the project.');
+        this.ide.newProject();
     },
 
     'permission-elevation-request': function(msg) {
@@ -124,6 +117,7 @@ WebSocketManager.MessageHandlers = {
             function() {
                 myself.sendMessage({
                     type: 'elevate-permissions',
+                    projectId: msg.projectId,
                     username: username
                 });
             }
@@ -200,6 +194,9 @@ WebSocketManager.MessageHandlers = {
     },
     'user-action': function(msg) {
         SnapActions.onMessage(msg.action);
+    },
+    'action-rejected': function(msg) {
+        SnapActions.onActionReject(msg.action);
     }
 };
 
@@ -259,13 +256,10 @@ WebSocketManager.prototype._connectWebSocket = function() {
         self.lastSocketActivity = Date.now();
         self.connected = true;
 
-        if (self.uuid) {
-            self.sendMessage({type: 'set-uuid', body: self.uuid});
-            self.onConnect(self.hasConnected);
-        } else {
-            self.sendMessage({type: 'request-uuid'});
-        }
-
+        self.sendMessage({
+            type: 'set-uuid',
+            clientId: SnapCloud.clientId
+        });
         self.hasConnected = true;
     };
 
@@ -405,12 +399,12 @@ WebSocketManager.prototype.deserializeData = function(dataList) {
 
 WebSocketManager.prototype.onConnect = function() {
     var myself = this;
+    SnapActions.requestMissingActions();
     return this.updateRoomInfo()
         .then(function() {
             while (myself.messages.length) {
                 myself.websocket.send(myself.messages.shift());
             }
-            myself.inActionRequest = false;
         });
 };
 
@@ -436,10 +430,8 @@ WebSocketManager.prototype.updateRoomInfo = function() {
     var myself = this,
         state = this.getClientState();
 
-    this.inActionRequest = true;
-    return SnapCloud.setClientState(state.room, state.role, state.owner, state.actionId)
+    return SnapCloud.setClientState(state.room, state.role, state.actionId)
         .catch(function() {
-            myself.inActionRequest = false;
             myself.ide.cloudError().apply(null, arguments);
         });
 };
@@ -535,6 +527,7 @@ WebSocketManager.prototype.startProcesses = function () {
         activeBlock = !!stage.threads.findProcess(block);
         if (!activeBlock) {  // Check if the process can be added
             process = this.processes[i].shift();
+            process.block.updateReadout();
             stage.threads.startProcess(
                 process.block,
                 process.isThreadSafe,
