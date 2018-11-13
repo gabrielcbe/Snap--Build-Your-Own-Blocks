@@ -450,7 +450,9 @@ NetsProcess.prototype.runAsyncFn = function (asyncFn, args) {
     if (!this[id]) {
         this[id] = {};
         this[id].startTime = new Date().getTime();
-        let promise = asyncFn.apply(this, args)
+        let promise = asyncFn.apply(this, args);
+        if (!promise.then) return promise; // its doesn't support promises
+        promise
             .then(r => {
                 this[id].complete = true;
                 this[id].response = r;
@@ -558,7 +560,13 @@ NetsProcess.prototype.mlModelSummary = function (name) {
 
 // Reinforcement learning blocks
 
-let rlAgents = {};
+const rlAgents = {};
+function getAgent(name) {
+    // TODO refactor other calls to use this function
+    const agent = rlAgents[name];
+    if (!agent) throw new Error(`couldn't find the agent "${name}"`);
+    return agent;
+}
 
 NetsProcess.prototype.agentReplay = function (name, memories) {
     let agent = rlAgents[name];
@@ -584,6 +592,16 @@ NetsProcess.prototype.agentReplay = function (name, memories) {
     if (res !== undefined) return res;
 };
 
+NetsProcess.prototype.agentUpdate = function (name, state, action, reward, nextState) {
+    const agent = getAgent(name);
+    // TODO validate and ensure all inputs are simple numbers
+    state = parseInt(state);
+    action = parseInt(action);
+    nextState = parseInt(nextState);
+    reward = parseFloat(reward);
+    agent.update(state, action, reward, nextState);
+};
+
 NetsProcess.prototype.agentLoad = function (name, saveName) {
     let agent = rlAgents[name];
     if (!agent) throw new Error(`couldn't find the agent.`);
@@ -603,20 +621,33 @@ NetsProcess.prototype.agentPickAction = function (name, state) {
     let agent = rlAgents[name];
     if (!agent) throw new Error(`couldn't find the agent.`);
     // TODO validate state
-    state = state.asArray().map(it => parseFloat(it));
+    state = state.asArray ? state.asArray().map(it => parseFloat(it)) : parseInt(state);
     let res = this.runAsyncFn(agent.act.bind(agent), [state]);
     if (res !== undefined) return res;
 };
 
 // resets or sets(initializes) the agent
-NetsProcess.prototype.agentCreate = function (name, actionSize, stateSize) {
+NetsProcess.prototype.agentCreate = function (name, actionSize, stateSize, useNN) {
     // TODO validate
     // remove non alphanum chars
     if (/[^a-zA-Z0-9]/.test(name)) throw new Error('pick an alphanumeric name');
+
     actionSize = parseInt(actionSize);
     stateSize = parseInt(stateSize);
 
     // setup the agent with defaults and inputs
-    rlAgents[name] = new Agent({actionSize: actionSize, stateSize: stateSize, epsilon: 0, batchSize: 4});
+    let agent;
+    if (useNN) {
+        rlAgents[name] = new Agent({actionSize: actionSize, stateSize: stateSize, epsilon: 0, batchSize: 4});
+    } else { // use the tabular form
+        TabularQLAgent = require('tabularQLAgent');
+        rlAgents[name] = new TabularQLAgent({
+            stateSize,
+            actionSize,
+            discountRate: 0.9,
+            updateRate: 0.1,
+            epsilon: 0,
+        });
+    }
     console.log('created agent', name);
 };
