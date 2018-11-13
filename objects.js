@@ -2035,9 +2035,10 @@ SpriteMorph.prototype.blockTemplates = function (category) {
         blocks.push('-');
         blocks.push(block('agentCreate'));
         blocks.push(block('agentPickAction'));
-        blocks.push(block('agentReplay'));
         blocks.push(block('agentSave'));
         blocks.push(block('agentLoad'));
+        blocks.push(block('agentReplay'));
+        blocks.push(block('agentUpdate'));
 
 
         if (SpriteMorph.prototype.enableFirstClass) {

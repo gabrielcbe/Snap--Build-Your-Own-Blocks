@@ -174,19 +174,13 @@ SpriteMorph.prototype.initBlocks = function () {
     SpriteMorph.prototype.blocks.agentCreate = {
         type: 'command',
         category: 'sensing',
-        spec: 'create agent %s with action size %n state size %n'
+        spec: 'create agent %s with action size %n state size %n useNN %b'
     };
 
     SpriteMorph.prototype.blocks.agentPickAction = {
         type: 'reporter',
         category: 'sensing',
-        spec: 'agent %s pick action given %l'
-    };
-
-    SpriteMorph.prototype.blocks.agentReplay = {
-        type: 'command',
-        category: 'sensing',
-        spec: 'agent %s replay memories %l'
+        spec: 'agent %s pick action given %n'
     };
 
     SpriteMorph.prototype.blocks.agentSave = {
@@ -200,6 +194,20 @@ SpriteMorph.prototype.initBlocks = function () {
         category: 'sensing',
         spec: 'agent %s load from %s'
     };
+
+    // TODO merge or otherwise make replay and update more consistent
+    SpriteMorph.prototype.blocks.agentReplay = {
+        type: 'command',
+        category: 'sensing',
+        spec: 'agent %s replay memories %l'
+    };
+
+    SpriteMorph.prototype.blocks.agentUpdate = {
+        type: 'command',
+        category: 'sensing',
+        spec: 'agent %s learn experience state %n action %n  reward %n  nextState %n'
+    };
+
 
 };
 SpriteMorph.prototype.initBlocks();
