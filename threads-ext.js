@@ -451,7 +451,6 @@ NetsProcess.prototype.runAsyncFn = function (asyncFn, args) {
         this[id] = {};
         this[id].startTime = new Date().getTime();
         let promise = asyncFn.apply(this, args);
-        if (!promise.then) return promise; // its doesn't support promises
         promise
             .then(r => {
                 this[id].complete = true;
@@ -622,8 +621,13 @@ NetsProcess.prototype.agentPickAction = function (name, state) {
     if (!agent) throw new Error(`couldn't find the agent.`);
     // TODO validate state
     state = state.asArray ? state.asArray().map(it => parseFloat(it)) : parseInt(state);
-    let res = this.runAsyncFn(agent.act.bind(agent), [state]);
-    if (res !== undefined) return res;
+    if (agent instanceof TabularQLAgent) return agent.act(state);
+
+    if (agent instanceof Agent) { // is a nueral network implementation
+        console.log('nn');
+        let res = this.runAsyncFn(agent.act.bind(agent), [state]);
+        if (res !== undefined) return res;
+    }
 };
 
 // resets or sets(initializes) the agent
