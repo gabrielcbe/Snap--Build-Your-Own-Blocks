@@ -2039,6 +2039,7 @@ SpriteMorph.prototype.blockTemplates = function (category) {
         blocks.push(block('agentLoad'));
         blocks.push(block('agentReplay'));
         blocks.push(block('agentUpdate'));
+        blocks.push(block('agentGetTable'));
 
 
         if (SpriteMorph.prototype.enableFirstClass) {

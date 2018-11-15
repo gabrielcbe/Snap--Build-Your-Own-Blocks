@@ -601,6 +601,15 @@ NetsProcess.prototype.agentUpdate = function (name, state, action, reward, nextS
     agent.update(state, action, reward, nextState);
 };
 
+NetsProcess.prototype.agentGetTable  = function (name) {
+    const agent = getAgent(name);
+    let table = agent._qTable
+        .map(row => new List(row))
+    console.log(table);
+    return new List(table);
+};
+
+
 NetsProcess.prototype.agentLoad = function (name, saveName) {
     let agent = rlAgents[name];
     if (!agent) throw new Error(`couldn't find the agent.`);

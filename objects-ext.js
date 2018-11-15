@@ -208,6 +208,12 @@ SpriteMorph.prototype.initBlocks = function () {
         spec: 'agent %s learn experience state %n action %n  reward %n  nextState %n'
     };
 
+    SpriteMorph.prototype.blocks.agentGetTable = {
+        type: 'reporter',
+        category: 'sensing',
+        spec: 'agent %s get logic table'
+    };
+
 
 };
 SpriteMorph.prototype.initBlocks();
