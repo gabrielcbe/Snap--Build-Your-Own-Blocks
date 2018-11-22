@@ -605,8 +605,13 @@ NetsProcess.prototype.agentGetTable  = function (name) {
     const agent = getAgent(name);
     let table = agent._qTable
         .map(row => new List(row))
-    console.log(table);
     return new List(table);
+};
+
+NetsProcess.prototype.agentSetTable  = function (name, table) {
+    const agent = getAgent(name);
+    let newQTable = table.asArray().map(row => row.asArray());
+    agent._qTable = newQTable;
 };
 
 
