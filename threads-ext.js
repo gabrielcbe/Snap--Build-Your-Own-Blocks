@@ -280,8 +280,23 @@ NetsProcess.prototype.callRPC = function (rpc, params, noCache) {
             } else {
                 stage.rpcError = null;
             }
-            this.rpcRequest = null;
-            return response;
+            const isInstructions = str => str.indexOf('function') !== -1;
+            if (isInstructions(response)) {
+                let myFn = () => {
+                    return new Promise((resolve, reject) => {
+                        setTimeout(resolve, 1000, 'did it yay');
+                    });
+                };
+                let instructions = JSON.parse(response);
+                let rv = this.runAsyncFn(myFn, {pushContext: false});
+                if (rv !== undefined) {
+                    this.rpcRequest = null;
+                    return rv;
+                }
+            } else { // is not instructions
+                this.rpcRequest = null;
+                return response;
+            }
         }
     } else if (this.readyToTerminate) {  // abort the RPC invocation
         this.rpcRequest.abort();
@@ -484,6 +499,7 @@ NetsProcess.prototype.reportStageHeight = function () {
 NetsProcess.prototype.runAsyncFn = function (asyncFn, opts) {
     opts = opts || {};
     opts = {
+        pushContext: true,
         timeout: opts.timeout || 2000,
         args: opts.args || [],
     };
@@ -522,6 +538,8 @@ NetsProcess.prototype.runAsyncFn = function (asyncFn, opts) {
         console.error(tmp.response);
         throw new Error(tmp.response);
     }
-    this.pushContext('doYield');
-    this.pushContext();
+    if (opts.pushContext) {
+        this.pushContext('doYield');
+        this.pushContext();
+    }
 };
