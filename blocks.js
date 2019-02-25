@@ -9676,7 +9676,8 @@ SymbolMorph.prototype.names = [
     'arrowRight',
     'arrowRightOutline',
     'robot',
-    'magnifiyingGlass'
+    'magnifiyingGlass',
+    'footprints',
 ];
 
 // SymbolMorph instance creation:
@@ -9862,6 +9863,10 @@ SymbolMorph.prototype.symbolCanvasColored = function (aColor) {
         return this.drawSymbolRobot(canvas, aColor);
     case 'magnifiyingGlass':
         return this.drawSymbolMagnifyingGlass(canvas, aColor);
+    case 'queue':
+        return this.drawSymbolQueue(canvas, aColor);
+    case 'footprints':
+        return this.drawSymbolFootprints(canvas, aColor);
     default:
         return canvas;
     }
@@ -11191,6 +11196,92 @@ SymbolMorph.prototype.drawSymbolMagnifyingGlass = function (canvas, color) {
 
     return canvas;
 };
+
+
+SymbolMorph.prototype.drawSymbolQueue = function (canvas, color) {
+
+    // draws a triangle given the tip position, dimenstions and direction
+    /* opts = {tipPos, dims, direction: pointing dir} */
+    var drawTriangle = function(ctx, color, opts) {
+        var tgHeight = opts.dims.h;
+        var tgWidth = opts.dims.w;
+        var direction = opts.direction === 'left' ? 1 : -1;
+        ctx.fillStyle = color.toString();
+        ctx.beginPath();
+        ctx.moveTo(opts.tipPos.x, opts.tipPos.y);
+        ctx.lineTo(opts.tipPos.x + (direction*tgWidth), opts.tipPos.y + tgHeight/2);
+        ctx.lineTo(opts.tipPos.x + (direction*tgWidth), opts.tipPos.y - tgHeight/2);
+        ctx.fill();
+    };
+
+    var ctx = canvas.getContext('2d');
+    var u = canvas.width/5;
+    var padding = u/2;
+    var rectW = u;
+    var rectH = 3*u;
+    var centerY = 1*padding + rectH/2;
+    var curX = padding;
+
+    ctx.fillStyle = color.toString();
+
+    var drawRightTri = function(startX) {
+        drawTriangle(ctx, color, {
+            tipPos: {x: startX + rectW, y: centerY},
+            dims: {h: rectH/2, w: rectW},
+            direction: 'right'
+        });
+    };
+
+    drawRightTri(curX);
+    curX += rectW+padding;
+
+    ctx.fillRect(curX, padding, rectW, rectH);
+    curX += rectW+padding;
+
+    ctx.fillRect(curX, padding, rectW, rectH);
+    curX += rectW+padding;
+
+    drawRightTri(curX);
+
+    return canvas;
+};
+
+SymbolMorph.prototype.drawSymbolFootprints = function (canvas, color) {
+    // answer a canvas showing a pair of (shoe) footprints
+    var ctx = canvas.getContext('2d'),
+        w = canvas.width,
+        u = w / 10,
+        r = u * 1.5;
+     ctx.fillStyle = color.toString();
+     // left shoe
+    // tip
+    ctx.beginPath();
+    ctx.arc(r, r, r, radians(-200), radians(0), false);
+    ctx.lineTo(r * 2, u * 5.5);
+    ctx.lineTo(u, u * 6);
+    ctx.closePath();
+    ctx.fill();
+    // heel
+    ctx.beginPath();
+    ctx.arc(u * 2.25, u * 6.75, u , radians(-40), radians(-170), false);
+    ctx.closePath();
+    ctx.fill();
+     // right shoe
+    // tip
+    ctx.beginPath();
+    ctx.arc(w - r, u * 4.5, r, radians(-180), radians(20), false);
+    ctx.lineTo(w - u, u * 8.5);
+    ctx.lineTo(w - (r * 2), u * 8);
+    ctx.closePath();
+    ctx.fill();
+    // heel
+    ctx.beginPath();
+    ctx.arc(w - (u * 2.25), u * 9, u, radians(0), radians(-150), false);
+    ctx.closePath();
+    ctx.fill();
+    return canvas;
+};
+
 
 // ColorSlotMorph //////////////////////////////////////////////////////
 

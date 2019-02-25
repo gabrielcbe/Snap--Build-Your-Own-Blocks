@@ -71,13 +71,42 @@ NetsProcess.prototype.doSocketMessage = function (msgInfo) {
         contents[fieldNames[i]] = fieldValues[i] || '';
     }
 
-    ide.sockets.sendMessage({
-        type: 'message',
-        dstId: targetRole,
-        srcId: srcId,
-        msgType: name,
-        content: contents
-    });
+    var sendMessage = function() {
+        ide.sockets.sendMessage({
+            type: 'message',
+            dstId: targetRole,
+            srcId: srcId,
+            msgType: name,
+            content: contents
+        });
+
+    };
+
+    var TURBO_OUTPUT_RATE = 90; // per sec
+    var outputRate = TURBO_OUTPUT_RATE;
+    var delay = 1000 / outputRate;
+
+    if (!this.reportIsFastTracking()) {
+        return sendMessage();
+    }
+
+    // else rate limit in turbo mode
+    var id = 'asyncFn-sendMsg';
+    if (!this[id]) {
+        this[id] = {};
+        this[id].endTime = new Date().getTime() + delay;
+        sendMessage();
+        this[id].onerror = function(event) {
+            this[id].error = event;
+        };
+    } else if (new Date().getTime() > this[id].endTime) {
+        // delay is passed
+        this[id] = null;
+        return;
+    }
+    this.pushContext('doYield');
+    this.pushContext();
+
 };
 
 //request block
@@ -442,38 +471,49 @@ NetsProcess.prototype.reportStageHeight = function () {
     return stage.dimensions.y;
 };
 
-// temp async helper
+// helps executing async functions in custom js blocks
+// WARN it could be slower than non-promise based approach
 // when calling this function, return only if the return value is not undefined.
-NetsProcess.prototype.runAsyncFn = function (asyncFn, args) {
-    let id = '_async' + 'Func'; // make sure id doesn't collide with process methods
+NetsProcess.prototype.runAsyncFn = function (asyncFn, opts) {
+    opts = opts || {};
+    opts = {
+        timeout: opts.timeout || 2000,
+        args: opts.args || [],
+    };
+    var id = '_async' + 'Func' + asyncFn.name; // make sure id doesn't collide with process methods
+    var tmp;
+    var myself = this;
     if (!id || !(asyncFn instanceof Function)) throw new Error('id or asyncFn input missing');
     if (!this[id]) {
         this[id] = {};
         this[id].startTime = new Date().getTime();
-        let promise = asyncFn.apply(this, args);
-        promise
-            .then(r => {
-                this[id].complete = true;
-                this[id].response = r;
+        var timeoutPromise = new Promise(function(_, reject) {
+            setTimeout(reject, opts.timeout, 'timeout');
+        });
+        var requestedPromise = asyncFn.apply(this, opts.args);
+        var promise = Promise.race([requestedPromise, timeoutPromise])
+            .then(function(r) {
+                myself[id].complete = true;
+                myself[id].response = r;
             })
-            .catch(e => {
-                this[id].error = true;
-                this[id].response = e;
+            .catch(function(e) {
+                myself[id].error = true;
+                myself[id].response = e;
             });
-        this[id].onerror = function(event) {
-            this[id].error = event;
+        myself[id].onerror = function(event) {
+            myself[id].error = event;
         };
-        this[id].promise = promise;
-    } else if (this[id].complete) {
+        myself[id].promise = promise;
+    } else if (myself[id].complete) {
         // Clear request
-        let tmp = this[id];
-        // console.debug('async fn took', new Date().getTime() - this[id].startTime, this);
-        this[id] = null;
+        tmp = myself[id];
+        myself[id] = null;
         return tmp.response;
-    } else if (this[id].error) {
-        let tmp = this[id];
-        this[id] = null;
-        throw Error(tmp.response);
+    } else if (myself[id].error) {
+        tmp = myself[id];
+        myself[id] = null;
+        console.error(tmp.response);
+        throw new Error(tmp.response);
     }
     this.pushContext('doYield');
     this.pushContext();

@@ -2686,6 +2686,27 @@ SpriteMorph.prototype.searchBlocks = function (
         searchPane.changed();
     }
 
+    searchPane.mouseClickLeft = function() {
+        if (world.currentKey !== 16) return; // shift key required.
+        ide.prompt('Search for used blocks', function (input) {
+            if (!input) return;
+            input = input.toLowerCase();
+            console.log('searching with query:', input);
+            var blocks = ide.findBlocks({specs: [input]});
+            console.log('found', blocks.length, 'blocks');
+            var msg;
+            if (blocks.length) {
+                var addresses = blocks.map(function(b) {
+                    return ide.blockAddress(b).join(' => ');
+                })
+                msg = addresses.join('\n');
+            } else {
+                msg = 'No blocks found';
+            }
+            ide.inform('Search Results', msg);
+        }, null, 'searchBlocks')
+    };
+
     searchPane.owner = this;
     searchPane.color = myself.paletteColor;
     searchPane.contents.color = myself.paletteColor;
