@@ -9,9 +9,11 @@
 // Add network, custom categories
 SpriteMorph.prototype.categories.splice(8, 0, 'network');
 SpriteMorph.prototype.categories.splice(9, 0, 'custom');
+SpriteMorph.prototype.categories.push('ai');
 
 SpriteMorph.prototype.blockColor.network = new Color(217, 77, 17);
 SpriteMorph.prototype.blockColor.custom = new Color(120, 120, 120);
+SpriteMorph.prototype.blockColor.ai = new Color(4, 99, 128);
 
 // Additional block definitions
 // RPC's
@@ -136,87 +138,87 @@ SpriteMorph.prototype.initBlocks = function () {
     // ML blocks
     SpriteMorph.prototype.blocks.mlInitModel = {
         type: 'command',
-        category: 'sensing',
+        category: 'ai',
         spec: 'init NN model %s'
     };
 
     SpriteMorph.prototype.blocks.mlAddDenseLayer = {
         type: 'command',
-        category: 'sensing',
+        category: 'ai',
         spec: 'model %s add dense layer units %n inputShape %l activation %s'
     };
 
     SpriteMorph.prototype.blocks.mlCompileModel = {
         type: 'command',
-        category: 'sensing',
+        category: 'ai',
         spec: 'compile model %s loss %s optimizer %s'
     };
 
     SpriteMorph.prototype.blocks.mlFitModel = {
         type: 'command',
-        category: 'sensing',
+        category: 'ai',
         spec: 'fit model %s xs %l ys %l epochs %n batch size %n'
     };
 
     SpriteMorph.prototype.blocks.mlPredict = {
         type: 'reporter',
-        category: 'sensing',
+        category: 'ai',
         spec: 'model %s predict xs %l'
     };
 
     SpriteMorph.prototype.blocks.mlModelSummary = {
         type: 'command',
-        category: 'sensing',
+        category: 'ai',
         spec: 'model %s summary'
     };
 
 
     SpriteMorph.prototype.blocks.agentCreate = {
         type: 'command',
-        category: 'sensing',
+        category: 'ai',
         spec: 'create agent %s action size %n state size %n useNN %b'
     };
 
     SpriteMorph.prototype.blocks.agentPickAction = {
         type: 'reporter',
-        category: 'sensing',
+        category: 'ai',
         spec: 'agent %s pick action given %n'
     };
 
     SpriteMorph.prototype.blocks.agentSave = {
         type: 'command',
-        category: 'sensing',
+        category: 'ai',
         spec: 'agent %s save as %s'
     };
 
     SpriteMorph.prototype.blocks.agentLoad = {
         type: 'command',
-        category: 'sensing',
+        category: 'ai',
         spec: 'agent %s load from %s'
     };
 
     // TODO merge or otherwise make replay and update more consistent
     SpriteMorph.prototype.blocks.agentReplay = {
         type: 'command',
-        category: 'sensing',
+        category: 'ai',
         spec: 'agent %s replay memories %l'
     };
 
     SpriteMorph.prototype.blocks.agentUpdate = {
         type: 'command',
-        category: 'sensing',
+        category: 'ai',
         spec: 'agent %s experience state %n action %n  reward %n  nextState %n'
     };
 
     SpriteMorph.prototype.blocks.agentGetTable = {
         type: 'reporter',
-        category: 'sensing',
+        category: 'ai',
         spec: 'agent %s get logic table'
     };
 
     SpriteMorph.prototype.blocks.agentSetTable = {
         type: 'command',
-        category: 'sensing',
+        category: 'ai',
         spec: 'agent %s set logic table %l'
     };
 

@@ -2000,6 +2000,31 @@ SpriteMorph.prototype.blockTemplates = function (category) {
         blocks.push('-');
         blocks.push(block('doPauseAll'));
 
+    } else if (cat === 'ai') {
+        blocks.push(block('agentCreate'));
+        blocks.push(block('agentPickAction'));
+        blocks.push(block('agentUpdate'));
+        blocks.push('-');
+
+        blocks.push(block('agentGetTable'));
+        blocks.push(block('agentSetTable'));
+        blocks.push('-');
+
+        blocks.push(block('agentSave'));
+        blocks.push(block('agentLoad'));
+        blocks.push('-');
+
+        blocks.push(block('agentReplay'));
+        blocks.push('-');
+
+        blocks.push(block('mlInitModel'));
+        blocks.push(block('mlAddDenseLayer'));
+        blocks.push(block('mlCompileModel'));
+        blocks.push(block('mlModelSummary'));
+        blocks.push(block('mlFitModel'));
+        blocks.push(block('mlPredict'));
+
+
     } else if (cat === 'sensing') {
 
         blocks.push(block('reportTouchingObject'));
@@ -2025,30 +2050,6 @@ SpriteMorph.prototype.blockTemplates = function (category) {
         blocks.push(block('getTimer'));
         blocks.push('-');
         blocks.push(block('reportAttributeOf'));
-        blocks.push('-');
-
-        blocks.push(block('agentCreate'));
-        blocks.push(block('agentPickAction'));
-        blocks.push(block('agentUpdate'));
-        blocks.push('-');
-
-        blocks.push(block('agentGetTable'));
-        blocks.push(block('agentSetTable'));
-        blocks.push('-');
-
-        blocks.push(block('agentSave'));
-        blocks.push(block('agentLoad'));
-        blocks.push('-');
-
-        blocks.push(block('agentReplay'));
-        blocks.push('-');
-
-        blocks.push(block('mlInitModel'));
-        blocks.push(block('mlAddDenseLayer'));
-        blocks.push(block('mlCompileModel'));
-        blocks.push(block('mlModelSummary'));
-        blocks.push(block('mlFitModel'));
-        blocks.push(block('mlPredict'));
         blocks.push('-');
 
 
