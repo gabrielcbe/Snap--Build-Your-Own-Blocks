@@ -137,7 +137,7 @@ SpriteMorph.prototype.initBlocks = function () {
     SpriteMorph.prototype.blocks.mlInitModel = {
         type: 'command',
         category: 'sensing',
-        spec: 'init model %s'
+        spec: 'init NN model %s'
     };
 
     SpriteMorph.prototype.blocks.mlAddDenseLayer = {
@@ -174,7 +174,7 @@ SpriteMorph.prototype.initBlocks = function () {
     SpriteMorph.prototype.blocks.agentCreate = {
         type: 'command',
         category: 'sensing',
-        spec: 'create agent %s with action size %n state size %n useNN %b'
+        spec: 'create agent %s action size %n state size %n useNN %b'
     };
 
     SpriteMorph.prototype.blocks.agentPickAction = {
@@ -186,7 +186,7 @@ SpriteMorph.prototype.initBlocks = function () {
     SpriteMorph.prototype.blocks.agentSave = {
         type: 'command',
         category: 'sensing',
-        spec: 'agent %s save with name %s'
+        spec: 'agent %s save as %s'
     };
 
     SpriteMorph.prototype.blocks.agentLoad = {
