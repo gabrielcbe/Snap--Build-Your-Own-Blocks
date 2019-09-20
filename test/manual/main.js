@@ -1,9 +1,13 @@
-/* globals WSMonkey, SnapDriver, Vue */
+/* globals WSMonkey, SnapDriver, EnsureUndo */
 /* eslint-disable no-console, no-unused-vars */
 
 const frames = Array.prototype.slice.call(document.getElementsByTagName('iframe'));
+const toolbar = document.getElementsByTagName('footer')[0];
 var driver = null,
     monkey = new WSMonkey();
+
+// TODO: Add module for ensuring actions are undo-able
+EnsureUndo.init(toolbar);
 
 frames.forEach(frame => {
     const url = window.location.href.replace(window.location.pathname, '');
@@ -11,7 +15,9 @@ frames.forEach(frame => {
 });
 
 function startTests() {
-    return frames
+    const windows = frames.map(frame => frame.contentWindow);
+    EnsureUndo.register(windows);
+    return frames  // FIXME: Nothing here is async...
         .reduce((promise, frame) => {
             return promise.then(() => {
                 driver = new SnapDriver(frame.contentWindow.world);
@@ -77,3 +83,4 @@ connectionProfile.onchange = function() {
         monkey.startPlaying();
     }
 };
+

@@ -9,20 +9,22 @@
   <body>
     <iframe id="user1"></iframe>
     <footer id="footer">
-        WebSocket Connection:
-        <select id="websocket-connection">
-            <option value="online">online</option>
-            <option value="offline">offline</option>
-            <option value="chaos">chaos</option>
-        </select>
-        <span id="connection-status" class="dot green lighten-1"></span>
-
+        <div id="ws-monkey">
+            WebSocket Connection:
+            <select id="websocket-connection">
+                <option value="online">online</option>
+                <option value="offline">offline</option>
+                <option value="chaos">chaos</option>
+            </select>
+            <span id="connection-status" class="dot green lighten-1"></span>
+        </div>
     </footer>
 
     <!-- load scripts -->
     <script src="/test/lib/vue.min.js"></script>
     <script src="/test/snap-driver.js"></script>
     <script src="/test/ws-monkey.js"></script>
+    <script src="./ensure-undo.js"></script>
     <script src="./main.js"></script>
   </body>
 </html>
