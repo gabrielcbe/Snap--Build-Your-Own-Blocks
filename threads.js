@@ -1816,6 +1816,47 @@ Process.prototype.reportIsFastTracking = function () {
     return false;
 };
 
+Process.prototype.doSetGlobalFlag = function (name, bool) {
+    var stage = this.homeContext.receiver.parentThatIsA(StageMorph);
+    name = this.inputOption(name);
+    this.assertType(bool, 'Boolean');
+    switch (name) {
+    case 'turbo mode':
+        this.doSetFastTracking(bool);
+        break;
+    case 'flat line ends':
+        SpriteMorph.prototype.useFlatLineEnds = bool;
+        break;
+    case 'video capture':
+        if (bool) {
+            stage.startVideo();
+        } else {
+            stage.stopProjection();
+        }
+        break;
+    case 'mirror video':
+        stage.mirrorVideo = bool;
+        break;
+    }
+};
+
+Process.prototype.reportGlobalFlag = function (name) {
+    var stage = this.homeContext.receiver.parentThatIsA(StageMorph);
+    name = this.inputOption(name);
+    switch (name) {
+    case 'turbo mode':
+        return this.reportIsFastTracking();
+    case 'flat line ends':
+        return SpriteMorph.prototype.useFlatLineEnds;
+    case 'video capture':
+        return !isNil(stage.projectionSource);
+    case 'mirror video':
+        return stage.mirrorVideo;
+    default:
+        return '';
+    }
+};
+
 Process.prototype.doSetFastTracking = function (bool) {
     var ide;
     if (!this.reportIsA(bool, 'Boolean')) {
@@ -2864,6 +2905,199 @@ Process.prototype.reportColorIsTouchingColor = function (color1, color2) {
     return false;
 };
 
+Process.prototype.reportAspect = function (aspect, location) {
+    // sense colors and sprites anywhere,
+    // use sprites to read/write data encoded in colors.
+    //
+    // usage:
+    // ------
+    // left input selects color/saturation/brightness/transparency or "sprites".
+    // right input selects "mouse-pointer", "myself" or name of another sprite.
+    // you can also embed a a reporter with a reference to a sprite itself
+    // or a list of two items representing x- and y- coordinates.
+    //
+    // what you'll get:
+    // ----------------
+    // left input (aspect):
+    //
+    //      'hue'           - hsv HUE on a scale of 0 - 100
+    //      'saturation'    - hsv SATURATION on a scale of 0 - 100
+    //      'brightness'    - hsv VALUE on a scale of 0 - 100
+    //      'transparency'  - rgba ALPHA on a reversed (!) scale of 0 - 100
+    //      'r-g-b-a'       - list of rgba values on a scale of 0 - 255 each
+    //      'sprites'       - a list of sprites at the location, empty if none
+    //
+    // right input (location):
+    //
+    //      'mouse-pointer' - color/sprites at mouse-pointer anywhere in Snap
+    //      'myself'        - sprites at or color UNDERNEATH the rotation center
+    //      sprite-name     - sprites at or color UNDERNEATH sprites's rot-ctr.
+    //      two-item-list   - color/sprites at x-/y- coordinates on the Stage
+    //
+    // what does "underneath" mean?
+    // ----------------------------
+    // the not-fully-transparent color of the top-layered sprite at the given
+    // location excluding the receiver sprite's own layer and all layers above
+    // it gets reported.
+    //
+    // color-aspect "underneath" a sprite means that the sprite's layer is
+    // relevant for what gets reported. Sprites can only sense colors in layers
+    // below themselves, not their own color and not colors in sprites above
+    // their own layer.
+
+    var choice = this.inputOption(aspect),
+        target = this.inputOption(location),
+        options = ['hue', 'saturation', 'brightness', 'transparency'],
+        idx = options.indexOf(choice),
+        thisObj = this.blockReceiver(),
+        thatObj,
+        stage = thisObj.parentThatIsA(StageMorph),
+        world = thisObj.world(),
+        point,
+        clr;
+
+    if (target === 'myself') {
+        if (choice === 'sprites') {
+            if (thisObj instanceof StageMorph) {
+                point = thisObj.center();
+            } else {
+                point = thisObj.rotationCenter();
+            }
+            return this.spritesAtPoint(point, stage);
+        } else {
+            clr = this.colorAtSprite(thisObj);
+        }
+    } else if (target === 'mouse-pointer') {
+        if (choice === 'sprites') {
+            return this.spritesAtPoint(world.hand.position(), stage);
+        } else {
+            clr = world.getGlobalPixelColor(world.hand.position());
+        }
+    } else if (target instanceof List) {
+        point = new Point(
+            target.at(1) * stage.scale + stage.center().x,
+            stage.center().y - (target.at(2) * stage.scale)
+        );
+        if (choice === 'sprites') {
+            return this.spritesAtPoint(point, stage);
+        } else {
+            clr = world.getGlobalPixelColor(point);
+        }
+    } else {
+        if (!target) {return; }
+        thatObj = this.getOtherObject(target, thisObj, stage);
+        if (thatObj) {
+            if (choice === 'sprites') {
+                point = thatObj instanceof SpriteMorph ?
+                    thatObj.rotationCenter() : thatObj.center();
+                return this.spritesAtPoint(point, stage);
+            } else {
+                clr = this.colorAtSprite(thatObj);
+            }
+        } else {
+            return;
+        }
+
+    }
+
+    if (choice === 'r-g-b-a') {
+        return new List([clr.r, clr.g, clr.b, Math.round(clr.a * 255)]);
+    }
+    if (idx < 0 || idx > 3) {
+        return;
+    }
+    if (idx === 3) {
+        return (1 - clr.a) * 100;
+    }
+    return clr.hsv()[idx] * 100;
+};
+
+Process.prototype.colorAtSprite = function (sprite) {
+    // private - helper function for aspect of location
+    // answer the top-most color at the sprite's rotation center
+    // excluding the sprite itself
+    var point = sprite instanceof SpriteMorph ? sprite.rotationCenter()
+            : sprite.center(),
+        stage = sprite.parentThatIsA(StageMorph),
+        child,
+        i;
+
+    if (!stage) {return new Color(); }
+    for (i = stage.children.length; i > 0; i -= 1) {
+        child = stage.children[i - 1];
+        if ((child !== sprite) &&
+            child.isVisible &&
+            child.bounds.containsPoint(point) &&
+            !child.isTransparentAt(point)
+        ) {
+            return child.getPixelColor(point);
+        }
+    }
+    if (stage.bounds.containsPoint(point)) {
+        return stage.getPixelColor(point);
+    }
+    return new Color();
+};
+
+Process.prototype.colorBelowSprite = function (sprite) {
+    // private - helper function for aspect of location
+    // answer the color underneath the layer of the sprite's rotation center
+    // NOTE: layer-aware color sensing is currently unused
+    // in favor of top-layer detection because of user-observations
+    var point = sprite instanceof SpriteMorph ? sprite.rotationCenter()
+            : sprite.center(),
+        stage = sprite.parentThatIsA(StageMorph),
+        below = stage,
+        found = false,
+        child,
+        i;
+
+    if (!stage) {return new Color(); }
+    for (i = 0; i < stage.children.length; i += 1) {
+        if (!found) {
+            child = stage.children[i];
+            if (child === sprite) {
+                found = true;
+            } else if (child.isVisible &&
+                child.bounds.containsPoint(point) &&
+                !child.isTransparentAt(point)
+            ) {
+                below = child;
+            }
+        }
+    }
+    if (below.bounds.containsPoint(point)) {
+        return below.getPixelColor(point);
+    }
+    return new Color();
+};
+
+Process.prototype.spritesAtPoint = function (point, stage) {
+    // private - helper function for aspect of location
+    // point argument is an absolute (Morphic) point
+    // answer a list of sprites, if any, at the given point
+    // ordered by their layer, i.e. top-layer is last in the list
+    return new List(
+        stage.children.filter(function (morph) {
+            return morph instanceof SpriteMorph &&
+                morph.isVisible &&
+                morph.bounds.containsPoint(point) &&
+                !morph.isTransparentAt(point);
+        })
+    );
+};
+
+Process.prototype.reportRelationTo = function (relation, name) {
+	var rel = this.inputOption(relation);
+ 	if (rel === 'distance') {
+  		return this.reportDistanceTo(name);
+  	}
+    if (rel === 'direction') {
+    	return this.reportDirectionTo(name);
+    }
+    return 0;
+};
+
 Process.prototype.reportDistanceTo = function (name) {
     var thisObj = this.blockReceiver(),
         thatObj,
@@ -2876,6 +3110,12 @@ Process.prototype.reportDistanceTo = function (name) {
         point = rc;
         if (this.inputOption(name) === 'mouse-pointer') {
             point = thisObj.world().hand.position();
+        } else if (this.inputOption(name) === 'center') {
+            return new Point(thisObj.xPosition(), thisObj.yPosition())
+                .distanceTo(new Point(0, 0));
+        } else if (name instanceof List) {
+            return new Point(thisObj.xPosition(), thisObj.yPosition())
+                .distanceTo(new Point(name.at(1), name.at(2)));
         }
         stage = thisObj.parentThatIsA(StageMorph);
         thatObj = this.getOtherObject(name, thisObj, stage);
@@ -2883,6 +3123,35 @@ Process.prototype.reportDistanceTo = function (name) {
             point = thatObj.rotationCenter();
         }
         return rc.distanceTo(point) / stage.scale;
+    }
+    return 0;
+};
+
+Process.prototype.reportDirectionTo = function (name) {
+    var thisObj = this.blockReceiver(),
+        thatObj;
+
+    if (thisObj) {
+        if (this.inputOption(name) === 'mouse-pointer') {
+            return thisObj.angleToXY(this.reportMouseX(), this.reportMouseY());
+        }
+        if (this.inputOption(name) === 'center') {
+            return thisObj.angleToXY(0, 0);
+        }
+        if (name instanceof List) {
+            return thisObj.angleToXY(
+                name.at(1),
+                name.at(2)
+            );
+        }
+        thatObj = this.getOtherObject(name, this.homeContext.receiver);
+        if (thatObj) {
+            return thisObj.angleToXY(
+                thatObj.xPosition(),
+                thatObj.yPosition()
+            );
+        }
+        return thisObj.direction();
     }
     return 0;
 };
@@ -2902,6 +3171,16 @@ Process.prototype.reportAttributeOf = function (attribute, name) {
         }
         if (thatObj) {
             this.assertAlive(thatObj);
+            if (attribute instanceof BlockMorph) { // a "wish"
+            	return this.reportContextFor(
+             	   this.reify(
+                		thatObj.getMethod(attribute.semanticSpec)
+                        	.blockInstance(),
+                		new List()
+                	),
+                 	thatObj
+                );
+            }
             if (attribute instanceof Context) {
                 return this.reportContextFor(attribute, thatObj);
             }
@@ -2923,7 +3202,120 @@ Process.prototype.reportAttributeOf = function (attribute, name) {
                                 : localize('Empty');
             case 'size':
                 return thatObj.getScale ? thatObj.getScale() : '';
+            case 'volume':
+                return thatObj.getVolume();
+            case 'balance':
+                return thatObj.getPan();
+            case 'width':
+                if (thatObj instanceof StageMorph) {
+                    return thatObj.dimensions.x;
+                }
+                this.assertType(thatObj, 'sprite');
+                return thatObj.width() / stage.scale;
+            case 'height':
+                if (thatObj instanceof StageMorph) {
+                    return thatObj.dimensions.y;
+                }
+                this.assertType(thatObj, 'sprite');
+                return thatObj.height() / stage.scale;
             }
+        }
+    }
+    return '';
+};
+
+Process.prototype.reportGet = function (query) {
+    // answer a reference to a first-class member
+    // or a list of first-class members
+    var thisObj = this.blockReceiver(),
+        neighborhood,
+        stage,
+        objName;
+
+    if (thisObj) {
+        switch (this.inputOption(query)) {
+        case 'self' :
+            return thisObj;
+        case 'other sprites':
+            stage = thisObj.parentThatIsA(StageMorph);
+            return new List(
+                stage.children.filter(function (each) {
+                    return each instanceof SpriteMorph &&
+                        each !== thisObj;
+                })
+            );
+        case 'parts':
+            return new List(thisObj.parts || []);
+        case 'anchor':
+            return thisObj.anchor || '';
+        case 'parent':
+            return thisObj.exemplar || '';
+        case 'children':
+            return new List(thisObj.specimens ? thisObj.specimens() : []);
+        case 'temporary?':
+            return thisObj.isTemporary || false;
+        case 'clones':
+            stage = thisObj.parentThatIsA(StageMorph);
+            objName = thisObj.name || thisObj.cloneOriginName;
+            return new List(
+                stage.children.filter(function (each) {
+                    return each.isTemporary &&
+                        (each !== thisObj) &&
+                        (each.cloneOriginName === objName);
+                })
+            );
+        case 'other clones':
+            return thisObj.isTemporary ?
+                    this.reportGet(['clones']) : new List();
+        case 'neighbors':
+            stage = thisObj.parentThatIsA(StageMorph);
+            neighborhood = thisObj.bounds.expandBy(new Point(
+                thisObj.width(),
+                thisObj.height()
+            ));
+            return new List(
+                stage.children.filter(function (each) {
+                    return each instanceof SpriteMorph &&
+                        (each !== thisObj) &&
+                        each.bounds.intersects(neighborhood);
+                })
+            );
+        case 'dangling?':
+            return !thisObj.rotatesWithAnchor;
+        case 'draggable?':
+            return thisObj.isDraggable;
+        case 'rotation style':
+            return thisObj.rotationStyle || 0;
+        case 'rotation x':
+            return thisObj.xPosition();
+        case 'rotation y':
+            return thisObj.yPosition();
+        case 'center x':
+            return thisObj.xCenter();
+        case 'center y':
+            return thisObj.yCenter();
+        case 'name':
+            return thisObj.name;
+        case 'stage':
+            return thisObj.parentThatIsA(StageMorph);
+        case 'costume':
+            return thisObj.costume;
+        case 'costumes':
+            return thisObj.reportCostumes();
+        case 'sounds':
+            return thisObj.sounds;
+        case 'width':
+            if (thisObj instanceof StageMorph) {
+                return thisObj.dimensions.x;
+            }
+            stage = thisObj.parentThatIsA(StageMorph);
+            return stage ? thisObj.width() / stage.scale : 0;
+        case 'height':
+            if (thisObj instanceof StageMorph) {
+                return thisObj.dimensions.y;
+            }
+            stage = thisObj.parentThatIsA(StageMorph);
+            return stage ? thisObj.height() / stage.scale : 0;
         }
     }
     return '';

@@ -985,26 +985,82 @@ SyntaxElementMorph.prototype.labelPart = function (spec) {
                 null,
                 true,
                 {
+                	'§_dir': null,
                     '(90) right' : 90,
                     '(-90) left' : -90,
                     '(0) up' : '0',
-                    '(180) down' : 180
+                    '(180) down' : 180,
+                    'random' : ['random']
                 }
             );
             part.setContents(90);
+            break;
+        case '%note':
+            part = new InputSlotMorph(
+                null, // test
+                true, // numeric
+                'pianoKeyboardMenu',
+                false // read-only
+            );
             break;
         case '%inst':
             part = new InputSlotMorph(
                 null,
                 true,
                 {
-                    '(1) Acoustic Grand' : 1,
-                    '(2) Bright Acoustic' : 2,
-                    '(3) Electric Grand' : 3,
-                    '(4) Honky Tonk' : 4,
-                    '(5) Electric Piano 1' : 5,
-                    '(6) Electric Piano 2' : 6,
-                    '(7) Harpsichord' : 7
+                    '(1) sine' : 1,
+                    '(2) square' : 2,
+                    '(3) sawtooth' : 3,
+                    '(4) triangle' : 4
+                }
+            );
+            part.setContents(1);
+            break;
+        case '%audio':
+            part = new InputSlotMorph(
+                null, // text
+                false, // numeric?
+                'audioMenu',
+                true // read-only
+            );
+            break;
+        case '%aa': // audio attributes
+            part = new InputSlotMorph(
+                null, // text
+                false, // numeric?
+                {
+                    'name' : ['name'],
+                    'duration' : ['duration'],
+                    'length' : ['length'],
+                    'number of channels' : ['number of channels'],
+                    'sample rate' : ['sample rate'],
+                    'samples' : ['samples']
+                },
+                true // read-only
+            );
+            break;
+        case '%img': // image attributes
+            part = new InputSlotMorph(
+                null, // text
+                false, // numeric?
+                {
+                    'name' : ['name'],
+                    'width' : ['width'],
+                    'height' : ['height'],
+                    'pixels' : ['pixels']
+                },
+                true // read-only
+            );
+            break;
+        case '%rate':
+            part = new InputSlotMorph(
+                null,
+                true,
+                {
+                    '22.05 kHz' : 22050,
+                    '44.1 kHz' : 44100,
+                    '88.2 kHz' : 88200,
+                    '96 kHz' : 96000
                 }
             );
             part.setContents(1);
@@ -1039,7 +1095,10 @@ SyntaxElementMorph.prototype.labelPart = function (spec) {
                     'pressed' : ['pressed'],
                     'dropped' : ['dropped'],
                     'mouse-entered' : ['mouse-entered'],
-                    'mouse-departed' : ['mouse-departed']
+                    'mouse-departed' : ['mouse-departed'],
+                    'scrolled-up' : ['scrolled-up'],
+                    'scrolled-down' : ['scrolled-down'],
+                    'stopped' : ['stopped'] // experimental
                 },
                 true // read-only
             );
@@ -1069,10 +1128,16 @@ SyntaxElementMorph.prototype.labelPart = function (spec) {
                 false, // numeric?
                 {
                     'letter' : ['letter'],
-                    'whitespace' : ['whitespace'],
+                    'word' : ['word'],
                     'line' : ['line'],
                     'tab' : ['tab'],
-                    'cr' : ['cr']
+                    'cr' : ['cr'],
+                    'csv' : ['csv'],
+                    'json' : ['json']
+                    /*
+                    'csv records' : ['csv records'],
+                    'csv fields' : ['csv fields']
+                    */
                 },
                 false // read-only
             );
@@ -1102,11 +1167,38 @@ SyntaxElementMorph.prototype.labelPart = function (spec) {
             );
             part.setContents(1);
             break;
+        case '%rel':
+            part = new InputSlotMorph(
+                null, // text
+                false, // numeric?
+                {
+                    'distance' : ['distance'],
+                    'direction' : ['direction']
+                },
+                true // read-only
+            );
+            break;
+        case '%loc': // location
+            part = new InputSlotMorph(
+                null,
+                false,
+                'locationMenu',
+                true
+            );
+            break;
         case '%spr':
             part = new InputSlotMorph(
                 null,
                 false,
                 'objectsMenu',
+                true
+            );
+            break;
+        case '%self':
+            part = new InputSlotMorph(
+                null,
+                false,
+                'objectsMenuWithSelf',
                 true
             );
             break;
@@ -1157,17 +1249,17 @@ SyntaxElementMorph.prototype.labelPart = function (spec) {
                 false,
                 {
                     color: ['color'],
+                    saturation: ['saturation'],
+                    brightness : ['brightness'],
+                    ghost: ['ghost'],
                     fisheye: ['fisheye'],
                     whirl: ['whirl'],
                     pixelate: ['pixelate'],
                     mosaic: ['mosaic'],
-                    duplicate: ['duplicate'],
-                    negative : ['negative'],
-                    comic: ['comic'],
-                    confetti: ['confetti'],
-                    saturation: ['saturation'],
-                    brightness : ['brightness'],
-                    ghost: ['ghost']
+                    negative : ['negative']
+                    // duplicate: ['duplicate'],
+                    // comic: ['comic'],
+                    // confetti: ['confetti']
                 },
                 true
             );
@@ -1239,49 +1331,6 @@ SyntaxElementMorph.prototype.labelPart = function (spec) {
             part = this.labelPart('%key');
             part.isStatic = true;
             break;
-        case '%msgType':
-            part = new InputSlotMorph(
-                null,
-                false,
-                'messageTypes',
-                true
-            );
-            break;
-        case '%msgOutput':
-            part = new MessageOutputSlotMorph();
-            break;
-        case '%msgInput':
-            part = new MessageInputSlotMorph();
-            break;
-        case '%roles':
-            // role ids
-            part = new InputSlotMorph(
-                null,
-                false,
-                'roleNames',
-                true
-            );
-            break;
-        case '%rpcNames':
-            part = new InputSlotMorph(
-                null,
-                false,
-                'rpcNames',
-                true
-            );
-            part.isStatic = true;
-            break;
-        case '%rpcActions':
-            part = new InputSlotMorph(
-                null,
-                false,
-                'rpcActions',
-                true
-            );
-            break;
-        case '%rpcMethod':
-            part = new RPCInputSlotMorph();
-            break;
         case '%msg':
             part = new InputSlotMorph(
                 null,
@@ -1313,6 +1362,8 @@ SyntaxElementMorph.prototype.labelPart = function (spec) {
                 false,
                 {
                     abs : ['abs'],
+                    // '\u2212' : ['\u2212'], // minus-sign
+                    neg : ['neg'],
                     ceiling : ['ceiling'],
                     floor : ['floor'],
                     sqrt : ['sqrt'],
@@ -1324,12 +1375,72 @@ SyntaxElementMorph.prototype.labelPart = function (spec) {
                     atan : ['atan'],
                     ln : ['ln'],
                     log : ['log'],
+                    lg : ['lg'],
                     'e^' : ['e^'],
-                    '10^' : ['10^']
+                    '10^' : ['10^'],
+                    '2^' : ['2^'],
                 },
                 true
             );
             part.setContents(['sqrt']);
+            break;
+        case '%layer':
+            part = new InputSlotMorph(
+                null,
+                false,
+                {
+                    front : ['front'],
+                    back : ['back']
+                },
+                true
+            );
+            part.setContents(['front']);
+            break;
+        case '%hsva':
+            part = new InputSlotMorph(
+                null,
+                false,
+                {
+                    hue : ['hue'],
+                    saturation : ['saturation'],
+                    brightness : ['brightness'],
+                    transparency : ['transparency']
+                },
+                true
+            );
+            part.setContents(['hue']);
+            break;
+        case '%pen':
+            part = new InputSlotMorph(
+                null,
+                false,
+                {
+                    size : ['size'],
+                    hue : ['hue'],
+                    saturation : ['saturation'],
+                    brightness : ['brightness'],
+                    transparency : ['transparency']
+                },
+                true
+            );
+            part.setContents(['hue']);
+            break;
+        case '%asp': // aspect
+            part = new InputSlotMorph(
+                null,
+                false,
+                {
+                    hue : ['hue'],
+                    saturation : ['saturation'],
+                    brightness : ['brightness'],
+                    transparency : ['transparency'],
+                    'r-g-b-a' : ['r-g-b-a'],
+                    '~' : null,
+                    sprites : ['sprites'],
+                },
+                true
+            );
+            part.setContents(['hue']);
             break;
         case '%txtfun':
             part = new InputSlotMorph(
@@ -1355,24 +1466,28 @@ SyntaxElementMorph.prototype.labelPart = function (spec) {
                 {
                     'all' : ['all'],
                     'this script' : ['this script'],
-                    'this block' : ['this block']
+                    'this block' : ['this block'],
+                    'all but this script' : ['all but this script'],
+                    'other scripts in sprite' : ['other scripts in sprite']
                 },
                 true
             );
             part.setContents(['all']);
             part.isStatic = true;
             break;
-        case '%stopOthersChoices':
+        case '%setting':
             part = new InputSlotMorph(
                 null,
                 false,
                 {
-                    'all but this script' : ['all but this script'],
-                    'other scripts in sprite' : ['other scripts in sprite']
+                    'turbo mode' : ['turbo mode'],
+                    'flat line ends' : ['flat line ends'],
+                    'video capture' : ['video capture'],
+                    'mirror video' : ['mirror video']
                 },
                 true
             );
-            part.setContents(['all but this script']);
+            part.setContents(['turbo mode']);
             part.isStatic = true;
             break;
         case '%typ':
@@ -1383,6 +1498,21 @@ SyntaxElementMorph.prototype.labelPart = function (spec) {
                 true
             );
             part.setContents(['number']);
+            break;
+        case '%mapValue':
+            part = new InputSlotMorph(
+                null,
+                false,
+                {
+                    String : ['String'],
+                    Number : ['Number'],
+                    'true' : ['true'],
+                    'false' : ['false']
+                },
+                true
+            );
+            part.setContents(['String']);
+            part.isStatic = true;
             break;
         case '%var':
             part = new InputSlotMorph(
@@ -1400,7 +1530,7 @@ SyntaxElementMorph.prototype.labelPart = function (spec) {
                 'shadowedVariablesMenu',
                 true
             );
-            part.isStatic = true;
+            // part.isStatic = true;
             break;
         case '%lst':
             part = new InputSlotMorph(
@@ -1462,10 +1592,37 @@ SyntaxElementMorph.prototype.labelPart = function (spec) {
         case '%cs':
             part = new CSlotMorph(); // non-static
             break;
+        case '%ca':
+            part = new CSlotMorph(); // non-static
+            part.isLoop = true; // has a loop symbol
+            part.add(this.labelPart('%loopArrow'));
+            break;
         case '%cl':
             part = new CSlotMorph();
             part.isStatic = true; // rejects reporter drops
             part.isLambda = true; // auto-reifies nested script
+            break;
+        case '%cla':
+            part = new CSlotMorph();
+            part.isStatic = true; // rejects reporter drops
+            part.isLambda = true; // auto-reifies nested script
+            part.isLoop = true; // has a loop symbol
+            part.add(this.labelPart('%loopArrow'));
+            break;
+        case '%loop':
+            part = new CSlotMorph();
+            part.isStatic = true;
+            part.isLoop = true; // has a loop symbol
+            part.add(this.labelPart('%loopArrow'));
+            break;
+        case '%loopArrow':
+            part = new SymbolMorph('loop');
+            part.size = this.fontSize * 0.7;
+            part.color = new Color(255, 255, 255);
+            part.shadowColor = this.color.darker(this.labelContrast);
+            part.shadowOffset = MorphicPreferences.isFlat ?
+                    new Point() : this.embossing;
+            part.drawNew();
             break;
         case '%clr':
             part = new ColorSlotMorph();
@@ -1585,6 +1742,41 @@ SyntaxElementMorph.prototype.labelPart = function (spec) {
                     new Point() : this.embossing;
             part.drawNew();
             break;
+        case '%blitz':
+            part = new SymbolMorph('flash');
+            part.size = this.fontSize;
+            part.color = new Color(255, 255, 255);
+            part.isProtectedLabel = false; // zebra colors
+            part.shadowColor = this.color.darker(this.labelContrast);
+            part.shadowOffset = MorphicPreferences.isFlat ?
+                    new Point() : this.embossing;
+            part.drawNew();
+            break;
+
+        // Video motion
+
+        case '%vid':
+            part = new InputSlotMorph(
+                null,
+                false, {
+                    'snap': ['snap'],
+                    'motion': ['motion'],
+                    'direction': ['direction']
+                },
+                true // read-only
+            );
+            part.setContents(['motion']);
+            break;
+        case '%on':
+            part = new InputSlotMorph(
+                null,
+                false, {
+                    'this sprite': ['this sprite'],
+                    'stage': ['stage']
+                },
+                true // read-only
+            );
+            break;
         default:
             nop();
         }
@@ -1596,7 +1788,7 @@ SyntaxElementMorph.prototype.labelPart = function (spec) {
         // has issues when loading costumes (asynchronously)
         // commented out for now
 
-        var rcvr = this.definition.receiver || this.receiver(),
+        var rcvr = this.definition.receiver || this.scriptTarget(),
             id = spec.slice(1),
             cst;
         if (!rcvr) {return this.labelPart('%stop'); }

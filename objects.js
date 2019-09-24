@@ -765,6 +765,12 @@ SpriteMorph.prototype.initBlocks = function () {
             category: 'sensing',
             spec: 'filtered for %clr'
         },
+        reportAspect: {
+            type: 'reporter',
+            category: 'sensing',
+            spec: '%asp at %loc',
+            defaults: [['hue']]
+        },
         reportStackSize: {
             dev: true,
             type: 'reporter',
@@ -815,15 +821,17 @@ SpriteMorph.prototype.initBlocks = function () {
             category: 'sensing',
             spec: 'mouse down?'
         },
+        reportRelationTo: {
+            only: SpriteMorph,
+            type: 'reporter',
+            category: 'sensing',
+            spec: '%rel to %dst',
+            defaults: [['distance']]
+        },
         reportKeyPressed: {
             type: 'predicate',
             category: 'sensing',
             spec: 'key %key pressed?'
-        },
-        reportDistanceTo: {
-            type: 'reporter',
-            category: 'sensing',
-            spec: 'distance to %dst'
         },
         doResetTimer: {
             type: 'command',
@@ -853,15 +861,17 @@ SpriteMorph.prototype.initBlocks = function () {
             spec: 'http:// %s',
             defaults: ['snap.berkeley.edu']
         },
-        reportIsFastTracking: {
-            type: 'predicate',
-            category: 'sensing',
-            spec: 'turbo mode?'
-        },
-        doSetFastTracking: {
+        doSetGlobalFlag: {
             type: 'command',
             category: 'sensing',
-            spec: 'set turbo mode to %b'
+            spec: 'set %setting to %b',
+            defaults: [['video capture']]
+        },
+        reportGlobalFlag: {
+            type: 'predicate',
+            category: 'sensing',
+            spec: 'is %setting on?',
+            defaults: [['turbo mode']]
         },
         reportDate: {
             type: 'reporter',
@@ -1220,6 +1230,11 @@ SpriteMorph.prototype.initBlockMigrations = function () {
             selector: 'doStopThis',
             inputs: [['this block']]
         },
+        doStopOthers: {
+            selector: 'doStopThis',
+            inputs: [['all']],
+            offset: 0
+        },
         receiveClick: {
             selector: 'receiveInteraction',
             inputs: [['clicked']]
@@ -1231,6 +1246,58 @@ SpriteMorph.prototype.initBlockMigrations = function () {
         reportFalse: {
             selector: 'reportBoolean',
             inputs: [false]
+        },
+        reportCostumes: {
+            selector: 'reportGet',
+            inputs: [['costumes']]
+        },
+        reportSounds: {
+            selector: 'reportGet',
+            inputs: [['sounds']]
+        },
+        doMapStringCode: {
+            selector: 'doMapValueCode',
+            inputs: [['String'], '<#1>'],
+            offset: 1
+        },
+        reportDistanceTo: {
+        	selector: 'reportRelationTo',
+         	inputs: [['distance']],
+            offset: 1
+        },
+        comeToFront: {
+            selector: 'goToLayer',
+            inputs: [['front']]
+        },
+        setHue: {
+            selector: 'setPenHSVA',
+            inputs: [['hue']],
+            offset: 1
+        },
+        setBrightness: {
+            selector: 'setPenHSVA',
+            inputs: [['brightness']],
+            offset: 1
+        },
+        changeHue: {
+            selector: 'changePenHSVA',
+            inputs: [['hue']],
+            offset: 1
+        },
+        changeBrightness: {
+            selector: 'changePenHSVA',
+            inputs: [['brightness']],
+            offset: 1
+        },
+        reportIsFastTracking: {
+            selector: 'reportGlobalFlag',
+            inputs: [['turbo mode']],
+            offset: 1
+        },
+        doSetFastTracking: {
+            selector: 'doSetGlobalFlag',
+            inputs: [['turbo mode']],
+            offset: 1
         }
     };
 };
@@ -1817,8 +1884,8 @@ SpriteMorph.prototype.blockTemplates = function (category) {
         blocks.push(block('show'));
         blocks.push(block('hide'));
         blocks.push('-');
-        blocks.push(block('comeToFront'));
-        blocks.push(block('goBack'));
+        //blocks.push(block('comeToFront'));
+        //blocks.push(block('goBack'));
 
     // for debugging: ///////////////
 
@@ -2018,7 +2085,7 @@ SpriteMorph.prototype.blockTemplates = function (category) {
         blocks.push('-');
         blocks.push(block('reportKeyPressed'));
         blocks.push('-');
-        blocks.push(block('reportDistanceTo'));
+        blocks.push(block('reportRelationTo'));
         blocks.push('-');
         blocks.push(block('doResetTimer'));
         blocks.push(watcherToggle('getTimer'));
@@ -2032,9 +2099,12 @@ SpriteMorph.prototype.blockTemplates = function (category) {
         blocks.push('-');
 
         blocks.push(block('reportURL'));
+        //blocks.push(block('reportAudio'));  // FIXME
+        //blocks.push(block('reportVideo'));  // FIXME
+        //blocks.push(block('doSetVideoTransparency'));
         blocks.push('-');
-        blocks.push(block('reportIsFastTracking'));
-        blocks.push(block('doSetFastTracking'));
+        blocks.push(block('reportGlobalFlag'));
+        blocks.push(block('doSetGlobalFlag'));
         blocks.push('-');
         blocks.push(block('reportDate'));
         blocks.push(block('reportUsername'));
