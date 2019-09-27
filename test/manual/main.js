@@ -14,14 +14,16 @@ frames.forEach(frame => {
     frame.setAttribute('src', url);
 });
 
+let ig = null;
 function startTests() {
     const windows = frames.map(frame => frame.contentWindow);
-    EnsureUndo.register(windows);
+    //EnsureUndo.register(windows);
     return frames  // FIXME: Nothing here is async...
         .reduce((promise, frame) => {
             return promise.then(() => {
                 driver = new SnapDriver(frame.contentWindow.world);
                 driver.setWindow(frame.contentWindow);
+                ig = InteractionGenerator(driver);
                 monkey.setWorld(frame.contentWindow.world); // update the world view for our monkey
             });
         }, Promise.resolve())
@@ -54,9 +56,22 @@ function fitIframes() {
     frames[0].style.height = idealHeight;
 }
 
-function onIframesReady() {
+const interactions = [];
+async function onIframesReady() {
     console.log('all iframes ready');
     document.body.style.visibility = 'visible';
+    while (1) {
+        //try {
+            interactions.push(await ig());
+        //} catch (err) {
+            //console.error(err);
+            //console.error(`Found a bug!`);
+            //console.log(JSON.stringify(interactions));
+            // TODO: Save the error list
+        //}
+        console.log(interactions[interactions.length-1]);
+        await driver.sleep(250);
+    }
 }
 
 const connectionStatus = document.getElementById("connection-status");
@@ -83,4 +98,3 @@ connectionProfile.onchange = function() {
         monkey.startPlaying();
     }
 };
-
