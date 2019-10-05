@@ -255,6 +255,9 @@ NetsBloxMorph.prototype.createControlBar = function () {
             return;
         }
 
+        // update the document title
+        document.title = headerName + suffix + ' - ' + myself.serializer.appName;
+
         this.label = new StringMorph(
             headerName + suffix,
             14,
@@ -839,7 +842,7 @@ NetsBloxMorph.prototype.droppedText = function (aString, name) {
                 myself.sockets.updateRoomInfo();
             });
     } else {
-        return IDE_Morph.prototype.droppedText.call(this, aString, name);
+        return IDE_Morph.prototype.droppedText.apply(this, arguments);
     }
 };
 

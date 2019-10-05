@@ -71,10 +71,11 @@ NetsProcess.prototype.doSocketMessage = function (msgInfo) {
         contents[fieldNames[i]] = fieldValues[i] || '';
     }
 
+    var dstId = targetRole instanceof List ? {contents: targetRole.asArray()} : targetRole;
     var sendMessage = function() {
         ide.sockets.sendMessage({
             type: 'message',
-            dstId: targetRole,
+            dstId: dstId,
             srcId: srcId,
             msgType: name,
             content: contents
@@ -265,6 +266,9 @@ NetsProcess.prototype.callRPC = function (rpc, params, noCache) {
             stage.rpcError = 'Request too large';
             return;
         }
+        if (this.rpcRequest.status === 404) {
+            return this.errorRPCNotAvailable.apply(this, rpc.split('/'));
+        }
         contentType = this.rpcRequest.getResponseHeader('content-type');
         if (contentType && contentType.indexOf('image') === 0) {
             image = this.getCostumeFromRPC(rpc, params);
@@ -374,11 +378,29 @@ NetsProcess.prototype.parseRPCResult = function (result) {
 };
 
 function listToArray(list) {
-    return list.asArray().map(it => {
-        if (it instanceof List) return listToArray(it);
-        return parseFloat(it);
-    });
+    if (!(list instanceof List)){
+        return list;
+    }
+    var combinedArray = [],
+        array = list.asArray(),
+        element;
+
+    for(var i = 0; i < array.length; i++) {
+        element = array[i];
+        if (element instanceof List) {
+            element = listToArray(element);
+        } else if (isObject(element)) {
+            SnapActions.serializer.flush();
+            element = SnapActions.serializer.store(element);
+        }
+        combinedArray.push(element);
+    }
+    return combinedArray;
 }
+
+NetsProcess.prototype.errorRPCNotAvailable = function (service, rpc) {
+    throw new Error('Cannot invoke "' + rpc + '" from "' + service + '". Service or RPC is not available.');
+};
 
 NetsProcess.prototype.doRunRPC =
 NetsProcess.prototype.getJSFromRPCStruct = function (rpc, methodSignature) {
@@ -410,7 +432,7 @@ NetsProcess.prototype.getJSFromRPCStruct = function (rpc, methodSignature) {
 
 NetsProcess.prototype.getJSFromRPCDropdown = function (rpc, action, params) {
     if (rpc && action) {
-        return this.getJSFromRPC(['', rpc, action].join('/'), params);
+        return this.getJSFromRPC([rpc, action].join('/'), params);
     }
 };
 

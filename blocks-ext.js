@@ -1,6 +1,6 @@
 /* global nop, DialogBoxMorph, ScriptsMorph, BlockMorph, InputSlotMorph, StringMorph, Color
    ReporterBlockMorph, CommandBlockMorph, MultiArgMorph, SnapActions, isNil,
-   ReporterSlotMorph, RingMorph, SyntaxElementMorph, contains, world*/
+   ReporterSlotMorph, RingMorph, SyntaxElementMorph, contains, world, utils*/
 // Extensions to the Snap blocks
 
 
@@ -11,6 +11,7 @@ BlockMorph.prototype.showHelp = function() {
     var myself = this,
         help,
         block,
+        nb,
         inputs = this.inputs(),
         serviceName = inputs[0].evaluate(),
         methodName = inputs[1].evaluate()[0],
@@ -41,8 +42,23 @@ BlockMorph.prototype.showHelp = function() {
             + metadata.slice(0,3).join(', ') + ' ...';
     }
 
+    // Get a copy of the block to display to the user
     block = this.fullCopy();
+    if (block instanceof CommandBlockMorph) {
+        nb = block.nextBlock();
+        if (nb) {
+            nb.destroy();
+        }
+    }
+    block.inputs().slice(2).forEach(function(child) {  // clear rpc args
+        if (child instanceof HintInputSlotMorph) {
+            child.setContents('');
+        } else {
+            child.userDestroy();
+        }
+    })
     block.addShadow();
+
     new DialogBoxMorph().inform(
         'Help',
         help,
@@ -156,6 +172,7 @@ StructInputSlotMorph.prototype.evaluate = function() {
 
 StructInputSlotMorph.prototype.setContents = function(name, values) {
     // Set the value for the dropdown
+    values = values || [];
     InputSlotMorph.prototype.setContents.call(this, name);
 
     if (this.parent) {  // update fields
@@ -178,6 +195,9 @@ StructInputSlotMorph.prototype.setContents = function(name, values) {
             this.parent.removeChild(this.fieldContent[i]);
         }
         this.fields = this.getFieldNames(name);
+        if (!this.fields) {
+            this.fields = values.map(function(){ return '???'; });
+        }
 
         if (scripts) {
             removed
@@ -188,7 +208,6 @@ StructInputSlotMorph.prototype.setContents = function(name, values) {
         }
 
         // Create new struct fields
-        values = values || [];
         this.fieldContent = [];
         for (i = 0; i < this.fields.length; i++) {
             this.fieldContent.push(this.updateField(this.fields[i], values[i]));
@@ -263,6 +282,45 @@ StructInputSlotMorph.prototype.updateField = function(field, value) {
     return result;
 };
 
+InputSlotMorph.prototype.rpcNames = function () {
+    var services = JSON.parse(utils.getUrlSync('/rpc')),
+        menuDict = {},
+        category,
+        name;
+
+    function sortDict(dict) {
+        var keys = Object.keys(dict).sort(),
+            sortedDict = {};
+
+        for (var i = 0; i < keys.length; i++) {
+            if (dict[keys[i]] instanceof Object && !Array.isArray(dict[keys[i]])) {
+                sortedDict[keys[i]] = sortDict(dict[keys[i]]);
+            } else {
+                sortedDict[keys[i]] = dict[keys[i]];
+            }
+        }
+
+        return sortedDict;
+    }
+
+    for (var i = services.length; i--;) {
+        name = services[i].name;
+        if (services[i].categories.length) {
+            for (var j = services[i].categories.length; j--;) {
+                category = services[i].categories[j];
+                if (!menuDict[category]) {
+                    menuDict[category] = {};
+                }
+                menuDict[category][name] = name;
+            }
+        } else {
+            menuDict[name] = name;
+        }
+    }
+
+    return sortDict(menuDict);
+};
+
 RPCInputSlotMorph.prototype = new StructInputSlotMorph();
 RPCInputSlotMorph.prototype.constructor = RPCInputSlotMorph;
 RPCInputSlotMorph.uber = StructInputSlotMorph.prototype;
@@ -275,13 +333,11 @@ function RPCInputSlotMorph() {
         'methodSignature',
         function(rpcMethod) {
             if (!this.fieldsFor || !this.fieldsFor[rpcMethod]) {
-                try {
-                    this.methodSignature();
-                } catch (e) { // let the projects load when the service is not supported
-                    /* eslint-disable no-console */
-                    console.error(e);
-                    /* eslint-enable no-console */
-                    world.children[0].showMessage && world.children[0].showMessage(e.message);
+                this.methodSignature();
+                var isSupported = !!this.fieldsFor;
+                if (!isSupported) {
+                    var msg = 'Service "' + this.getRPCName() + '" is not available';
+                    world.children[0].showMessage && world.children[0].showMessage(msg);
                     this.fieldsFor = {};
                 }
             }
@@ -289,8 +345,8 @@ function RPCInputSlotMorph() {
                 return this.fieldsFor[rpcMethod].args.map(function(arg) {
                     return arg.name;
                 });
-            } else { // the requested action is undefined
-                return [];
+            } else {  // the requested action is undefined
+                return null;
             }
         },
         true
@@ -315,6 +371,7 @@ RPCInputSlotMorph.prototype.getRPCName = function () {
 // sets this.fieldsFor and returns the method signature dict
 RPCInputSlotMorph.prototype.methodSignature = function () {
     var actionNames,
+        block,
         rpc,
         dict = {};
 
@@ -322,18 +379,36 @@ RPCInputSlotMorph.prototype.methodSignature = function () {
     if (rpc) {
         // stores information on a specific service's rpcs
         try {
-            this.fieldsFor = JSON.parse(this.getURL('/rpc/' + rpc)).rpcs;
+            this.fieldsFor = JSON.parse(utils.getUrlSync('/rpc/' + rpc)).rpcs;
+            actionNames = Object.keys(this.fieldsFor);
+            this.isCurrentRPCSupported = true;
         } catch (e) {
-            throw new Error('Service "' + rpc + '" is not available');
+            this.isCurrentRPCSupported = false;
+            block = this.parentThatIsA(BlockMorph);
+            block.showBubble(localize('Service "' + rpc + '" is not available'));
+            actionNames = [];
         }
 
-        actionNames = Object.keys(this.fieldsFor);
         for (var i = actionNames.length; i--;) {
             var aName = actionNames[i];
             if (!this.fieldsFor[aName].deprecated) dict[aName] = aName;
         }
     }
     return dict;
+};
+
+RPCInputSlotMorph.prototype.evaluate = function() {
+    var fields,
+        rpc;
+
+    if (!this.isCurrentRPCSupported) {
+        rpc = InputSlotMorph.prototype.evaluate.call(this);
+        fields = this.getFieldNames(rpc);
+        if (this.isCurrentRPCSupported) {
+            this.fields = fields;
+        }
+    }
+    return RPCInputSlotMorph.uber.evaluate.call(this);
 };
 
 // HintInputSlotMorph //////////////////////////////////////////////
