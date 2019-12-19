@@ -1,3 +1,10 @@
+/* globals CommentMorph, CLIENT_ID, SnapSerializer, SnapUndo, isNil,
+ SnapCloud, SyntaxElementMorph, BlockEditorMorph, Point, ArgMorph,
+ ScriptsMorph, StageMorph, CommandBlockMorph, ReporterBlockMorph,
+ PrototypeHatBlockMorph, BlockMorph, RingMorph, TemplateSlotMorph,
+ SERVER_URL, detect, WorldMorph, ColorSlotMorph, JukeboxMorph,
+ CommandSlotMorph, copy, CSlotMorph, HandMorph, StringMorph, Color,
+ InputSlotMorph, BlockLabelFragment, WardrobeMorph, IDE_Morph*/
 var logger = {
     log: console.log.bind(console),
     debug: console.info.bind(console),
@@ -479,7 +486,7 @@ ActionManager.prototype.onReceiveAction = function(msg) {
 };
 
 ActionManager.prototype.rejectPredecessorsInQueue = function(queue, event) {
-    var action = queue.find(function(action) { return action.equals(event)});
+    var action = queue.find(function(action) { return action.equals(event);});
 
     // ensure that we found the given action
     if (action) {
@@ -646,10 +653,6 @@ ActionManager.prototype.getBlockOwnerId = function(block) {
     }
 
     return this._blockToOwnerId[blockId];
-};
-
-ActionManager.prototype.getBlockOwner = function(block) {
-    return this.getOwnerFromId(this.getBlockOwnerId(blockId));
 };
 
 /* * * * * * * * * * * * Preprocess args (before action is accepted) * * * * * * * * * * * */
@@ -1052,8 +1055,8 @@ ActionManager.prototype._setCommentText = function(comment, value) {
 };
 
 ActionManager.prototype._unringify = function(block) {
-    var ring = this.getOutermostRing(block),
-        parent = this.getParentWithId(block);
+    var parent = this.getParentWithId(block),
+        ring = parent.parentThatIsA(RingMorph);
 
     // Get the last block before the ring
     while (parent !== ring) {
@@ -1071,29 +1074,15 @@ ActionManager.prototype.getParentWithId = function(block) {
     return block.parent;
 };
 
-ActionManager.prototype.getOutermostRing = function(block, immediate) {
-    var parent;
-
-    if (immediate) {
+ActionManager.prototype._ringify = function(block) {
+    // If contained in a ringmorph, get the outermost ring
+    var ringId = this.newId(),
         parent = this.getParentWithId(block);
-    } else {
-        parent = block.parentThatIsA(RingMorph);
-    }
 
     while (parent instanceof RingMorph) {
         block = parent;
         parent = this.getParentWithId(block);
     }
-
-    return block;
-
-};
-
-ActionManager.prototype._ringify = function(block) {
-    // If contained in a ringmorph, get the outermost ring
-    var ringId = this.newId();
-
-    block = this.getOutermostRing(block, true);
 
     return [block.id, ringId];
 };
@@ -1137,8 +1126,7 @@ ActionManager.prototype._addSound = function(sound, owner, focus) {
     if (sizeInMb > SIZE_THRESHOLD) {
         logger.error('audio file is too big', sound);
 
-        var nb = world.children[0];
-        nb.simpleNotification('Audio file is too big.');
+        this.ide().simpleNotification('Audio file is too big.');
 
         // replace it with an error sound
         sound.audio.src = SERVER_URL + '/Sounds/Meow.wav';
@@ -1292,7 +1280,7 @@ ActionManager.prototype._duplicateSprite = function(sprite) {
 
 // Helper method
 ActionManager.prototype._getOpeningSpriteTag = function(str) {
-    var regex = /<sprite.*?[^\\]>/,
+    var regex = /<sprite\b[^>]+[^\\]>/,
         match = str.match(regex);
 
     return match[0];
@@ -1577,11 +1565,6 @@ ActionManager.prototype._getCustomBlockEditor = function(id, block) {
     return editor;
 };
 
-ActionManager.prototype.getBlockOwner = function(block) {
-    var ownerId = this._blockToOwnerId[block.id];
-    return this._owners[ownerId];
-};
-
 ActionManager.prototype.getBlockFromId = function(id) {
     var ids = id.split('/'),
         blockId = ids.shift(),
@@ -1655,8 +1638,7 @@ ActionManager.prototype.onMoveBlock = function(id, rawTarget) {
         target = copy(rawTarget),
         isTargetDragging = false,
         afterMove,
-        scripts,
-        owner;
+        scripts;
 
     this.ensureNotDragging(block);
     this.__recordTarget(block.id, rawTarget);
@@ -1920,7 +1902,7 @@ ActionManager.prototype._onRemoveBlock = function(id, userDestroy, callback) {
                 } else {
                     return [child];
                 }
-            }).reduce(function (l1, l2) { return l1.concat(l2)}, []);
+            }).reduce(function (l1, l2) { return l1.concat(l2); }, []);
             this.__clearBlockRecords(id);
         }
 
@@ -3209,7 +3191,7 @@ ActionManager.OwnerFor.setStageSize =
 ActionManager.OwnerFor.importBlocks =
 ActionManager.OwnerFor.importSprites =
 ActionManager.OwnerFor.openProject =
-ActionManager.OwnerFor.duplicateSprites =
+ActionManager.OwnerFor.duplicateSprite =
 ActionManager.OwnerFor.addSprite = function() {
     return null;
 };

@@ -1,6 +1,6 @@
 /* globals ProjectDialogMorph, ensureFullUrl, localize, nop,
    IDE_Morph, Process, SnapCloud, BlockExportDialogMorph, DialogBoxMorph,
-   detect
+   detect, Point
    */
 
 ProjectDialogMorph.prototype._deleteProject =
@@ -521,4 +521,27 @@ IDE_Morph.prototype.mobileMode.positionButtons = function(buttons, controls) {
         button.show();
     });
 
+};
+
+IDE_Morph.prototype.initializeEmbeddedAPI = function () {
+    var self = this,
+        externalVariables = {},
+        receiveMessage;
+
+    receiveMessage = function(event) {
+        switch (event.data.type) {
+        case 'import':
+            self.droppedText(event.data.content, event.data.name);
+            break;
+        case 'set-variable':
+            externalVariables[event.data.key] = event.data.value;
+            break;
+        case 'delete-variable':
+            delete externalVariables[event.data.key];
+            break;
+        }
+    };
+
+    window.externalVariables = externalVariables;
+    window.addEventListener('message', receiveMessage, false);
 };
