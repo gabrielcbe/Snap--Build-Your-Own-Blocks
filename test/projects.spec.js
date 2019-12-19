@@ -12,7 +12,7 @@ async function loadProjectTests() {
             'serialize-fn-rpcs',
             'trivia-tests',
             'kvstore-tests',
-            'execute-tests',
+            //'execute-tests',
             'hangman-tests',
             'air-quality-tests',
             'google-maps-tests',
