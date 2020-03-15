@@ -6,6 +6,7 @@
    SnapSerializer, newCanvas, detect, WatcherMorph, SERVICES_URL */
 // Netsblox IDE (subclass of IDE_Morph)
 
+
 NetsBloxMorph.prototype = new IDE_Morph();
 NetsBloxMorph.prototype.constructor = NetsBloxMorph;
 NetsBloxMorph.uber = IDE_Morph.prototype;
@@ -79,7 +80,8 @@ NetsBloxMorph.prototype.cloudMenu = function () {
     if (SnapCloud.username && this.room.isOwner()) {
         menu.addLine();
         menu.addItem(
-            'Collaborators...',
+            //MMSNAP
+            localize('Collaborators')+'...',
             'manageCollaborators'
         );
     }
@@ -401,7 +403,8 @@ NetsBloxMorph.prototype.projectMenu = function () {
     }
 
     item = [
-        'Services...',
+        //MMSNAP
+        localize('Services...'),
         function () {
             var url = myself.serviceURL('servicelibs', 'SERVICELIBS'),
                 names = this.getMediaListFromURL(url),
@@ -423,7 +426,8 @@ NetsBloxMorph.prototype.projectMenu = function () {
             });
             mediaMenu.popup(myself.world(), myself.controlBar.projectButton.bottomLeft());
         },
-        'Select services to include in this project.'
+        //MMSNAP
+        localize('Select services to include in this project.')
     ];
     menu.items.splice(menu.items.length-2, 0, item);
 
