@@ -4894,11 +4894,13 @@ HatBlockMorph.prototype.init = function () {
     this.setExtent(new Point(300, 150));
 };
 
-// finds the readout child morph
 HatBlockMorph.prototype.readout = function () {
-    for (var i=0; i<this.children.length; i++) {
-        if (this.children[i] instanceof SpeechBubbleMorph) return this.children[i];
-    }
+    return detect(
+        this.children,
+        function(child) {
+            return child instanceof SpeechBubbleMorph;
+        }
+    );
 };
 
 // finds and returns the msg queue for this hatblock
@@ -6560,7 +6562,9 @@ ScriptsMorph.prototype.reactToDropOf = function (droppedMorph, hand) {
 };
 
 ScriptsMorph.prototype.moveBlock = function (block, target, hand) {
-    var origin = hand && hand.grabOrigin.origin;
+    var origin = hand && hand.grabOrigin.origin,
+        position = origin && hand.grabOrigin.position.add(origin.position());
+
 
     if (origin !== this && origin instanceof ScriptsMorph) {  // moving between open editors
         // Revert the block back to the origin in case this fails
@@ -6576,13 +6580,14 @@ ScriptsMorph.prototype.moveBlock = function (block, target, hand) {
         // copy the blocks and add them to the new editor
         dup.id = null;
         hand.grabOrigin.origin.add(block);
-        return SnapActions.moveBlock(dup, target)
+        return SnapActions.moveBlock(dup, target, position)
             // if that succeeds, remove them from the current editor
             .then(function() {
                 return SnapActions.removeBlock(block);
             });
     } else {  // basic moveBlock
-        SnapActions.moveBlock(block, target);
+        position = origin instanceof ScriptsMorph ? position : null;
+        SnapActions.moveBlock(block, target, position);
     }
 };
 

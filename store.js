@@ -2679,7 +2679,9 @@ Context.prototype.toPortableXML = function (serializer) {
 
     xml = this.toXML(serializer);
 
-    this.outerContext.variables = outerContextVars || this.outerContext.variables;
+    if (this.outerContext) {
+        this.outerContext.variables = outerContextVars || this.outerContext.variables;
+    }
 
     return xml;
 };
