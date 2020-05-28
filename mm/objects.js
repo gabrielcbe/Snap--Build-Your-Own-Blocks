@@ -366,7 +366,7 @@ SpriteMorph.prototype.blockTemplates = function(category) {
   //console.log('this' + myself);
 
   //  Button that triggers a connection attempt
-  this.mBotConnectButton = new PushButtonMorph(
+  myself.mBotConnectButton = new PushButtonMorph(
     null,
     function() {
       this.statusConnectionmBot();
@@ -375,7 +375,7 @@ SpriteMorph.prototype.blockTemplates = function(category) {
   );
 
   //  Button that triggers a disconnection from board
-  this.mBotDisconnectButton = new PushButtonMorph(
+  myself.mBotDisconnectButton = new PushButtonMorph(
     null,
     function() {
       this.registraDesconexaoMBOT();
@@ -383,7 +383,7 @@ SpriteMorph.prototype.blockTemplates = function(category) {
     'Disconnect mBot'
   );
 
-  this.SpheroConnectButton = new PushButtonMorph(
+  myself.SpheroConnectButton = new PushButtonMorph(
     null,
     function() {
       this.statusConnectionSphero();
@@ -391,7 +391,7 @@ SpriteMorph.prototype.blockTemplates = function(category) {
     'Connect Sphero'
   );
 
-  this.SpheroDisconnectButton = new PushButtonMorph(
+  myself.SpheroDisconnectButton = new PushButtonMorph(
     null,
     function() {
       this.registraDesconexaoSphero();
@@ -399,7 +399,7 @@ SpriteMorph.prototype.blockTemplates = function(category) {
     'Disconnect Sphero'
   );
 
-  this.BLEBitConnectButton = new PushButtonMorph(
+  myself.BLEBitConnectButton = new PushButtonMorph(
     null,
     function() {
       this.statusConnectionBLEBIT();
@@ -407,14 +407,14 @@ SpriteMorph.prototype.blockTemplates = function(category) {
     'Connect BLEBit'
   );
 
-  this.BLEBitDisconnectButton = new PushButtonMorph(
+  myself.BLEBitDisconnectButton = new PushButtonMorph(
     null,
     function() {
       this.registraDesconexaoBLEBIT();
     },
     'Disconnect BLEBit'
   );
-  this.ArduinoConnectButton = new PushButtonMorph(
+  myself.ArduinoConnectButton = new PushButtonMorph(
     null,
     function() {
       this.statusConnectionArduino();
@@ -422,7 +422,7 @@ SpriteMorph.prototype.blockTemplates = function(category) {
     'Connect Arduino'
   );
 
-  this.ArduinoDisconnectButton = new PushButtonMorph(
+  myself.ArduinoDisconnectButton = new PushButtonMorph(
     null,
     function() {
       this.registraDesconexaoArduino();
@@ -430,7 +430,7 @@ SpriteMorph.prototype.blockTemplates = function(category) {
     'Disconnect Arduino'
   );
 
-  this.RaspberryPiConnectButton = new PushButtonMorph(
+  myself.RaspberryPiConnectButton = new PushButtonMorph(
     null,
     function() {
       this.statusConnectionRaspberryPi();
@@ -438,14 +438,14 @@ SpriteMorph.prototype.blockTemplates = function(category) {
     'Connect RaspberryPi'
   );
 
-  this.RaspberryPiDisconnectButton = new PushButtonMorph(
+  myself.RaspberryPiDisconnectButton = new PushButtonMorph(
     null,
     function() {
       this.registraDesconexaoRaspberryPi();
     },
     'Disconnect RaspberryPi'
   );
-  this.LampBLEConnectButton = new PushButtonMorph(
+  myself.LampBLEConnectButton = new PushButtonMorph(
     null,
     function() {
       this.statusConnectionLampBLE();
@@ -453,7 +453,7 @@ SpriteMorph.prototype.blockTemplates = function(category) {
     'Connect LampBLE'
   );
 
-  this.LampBLEDisconnectButton = new PushButtonMorph(
+  myself.LampBLEDisconnectButton = new PushButtonMorph(
     null,
     function() {
       this.registraDesconexaoLampBLE();
@@ -476,8 +476,8 @@ SpriteMorph.prototype.blockTemplates = function(category) {
 
   if (category === 'mBot') {
 
-    blocks.push(this.mBotConnectButton);
-    blocks.push(this.mBotDisconnectButton);
+    blocks.push(myself.mBotConnectButton);
+    blocks.push(myself.mBotDisconnectButton);
     blocks.push('-');
 
     //blocks.push(watcherToggle('mBotUltraSonic'));
@@ -502,8 +502,8 @@ SpriteMorph.prototype.blockTemplates = function(category) {
 
   } else if (category === 'Sphero') {
 
-    blocks.push(this.SpheroConnectButton);
-    blocks.push(this.SpheroDisconnectButton);
+    blocks.push(myself.SpheroConnectButton);
+    blocks.push(myself.SpheroDisconnectButton);
     blocks.push('-');
 
     blocks.push(blockBySelector('SpheroTotalColisoes'));
@@ -518,8 +518,8 @@ SpriteMorph.prototype.blockTemplates = function(category) {
 
   } else if (category === 'LittleBits') {
 
-    blocks.push(this.BLEBitConnectButton);
-    blocks.push(this.BLEBitDisconnectButton);
+    blocks.push(myself.BLEBitConnectButton);
+    blocks.push(myself.BLEBitDisconnectButton);
     blocks.push('-');
 
     blocks.push(blockBySelector('BLEin'));
@@ -532,8 +532,8 @@ SpriteMorph.prototype.blockTemplates = function(category) {
 
   } else if (category === 'Arduino') {
 
-    blocks.push(this.ArduinoConnectButton);
-    blocks.push(this.ArduinoDisconnectButton);
+    blocks.push(myself.ArduinoConnectButton);
+    blocks.push(myself.ArduinoDisconnectButton);
     blocks.push('-');
     blocks.push(blockBySelector('ArduinoReportConnected'));
     blocks.push('=');
@@ -576,8 +576,8 @@ SpriteMorph.prototype.blockTemplates = function(category) {
 
   } else if (category === 'SalaIoT') {
 
-    blocks.push(this.LampBLEConnectButton);
-    blocks.push(this.LampBLEDisconnectButton);
+    blocks.push(myself.LampBLEConnectButton);
+    blocks.push(myself.LampBLEDisconnectButton);
     blocks.push('=');
 
     blocks.push(blockBySelector('LampBLEonoff'));
@@ -594,8 +594,8 @@ SpriteMorph.prototype.blockTemplates = function(category) {
 
   } else if (category === 'RaspberryPi') {
 
-    blocks.push(this.RaspberryPiConnectButton);
-    blocks.push(this.RaspberryPiDisconnectButton);
+    blocks.push(myself.RaspberryPiConnectButton);
+    blocks.push(myself.RaspberryPiDisconnectButton);
 
     blocks.push('-');
     blocks.push(blockBySelector('RpiRemoteIP'));
@@ -906,208 +906,286 @@ SpriteMorph.prototype.mBotBuzzer = function(tone, beat) {
 }
 
 
-SpriteMorph.prototype.ArduinoReportConnected = function() {
-  //var sprite = this.blockReceiver();
-  return isBoardReady();
+SpriteMorph.prototype.ArduinoReportConnected = function () {
+  if (!clienteConectadoArduino) {
+    if (!connection_pending_arduino) {
+      globalthis.statusConnectionArduino();
+      connection_pending_arduino = true;
+    }
+  }
+  if (!clienteConectadoArduino) {
+    let callbackEntry = [this.ArduinoDigital_write.bind(this)];
+    wait_open_arduino.push(callbackEntry);
+  } else {
+    return isBoardReady();
+  }
+};
 
-}
-SpriteMorph.prototype.ArduinoDigital_write = function(pin, value) {
-  pin = parseInt(pin, 10);
-  value = parseInt(value, 10);
+SpriteMorph.prototype.ArduinoDigital_write = function (pin, value) {
+  if (!clienteConectadoArduino) {
+    if (!connection_pending_arduino) {
+      globalthis.statusConnectionArduino();
+      connection_pending_arduino = true;
+    }
+  }
+  if (!clienteConectadoArduino) {
+    let callbackEntry = [this.ArduinoDigital_write.bind(this), pin, value];
+    wait_open_arduino.push(callbackEntry);
+  } else {
+    pin = parseInt(pin, 10);
+    if (pin_modes_arduino[pin] !== DIGITAL_OUTPUT) {
+      pin_modes_arduino[pin] = DIGITAL_OUTPUT;
+      msg = {
+        command: "set_mode_digital_output",
+        pin: pin,
+      };
+      msg = JSON.stringify(msg);
+      console.log(msg);
+      clientArduino.send(msg);
+    }
 
-  if (value > 1)
-    value = 1;
-  else if (value < 0)
-    value = 0;
+    value = parseInt(value, 10);
+    if (value >= 1) value = 1;
+    else if (value <= 0) value = 0;
 
-  if (pin_modes_arduino[pin] !== DIGITAL_OUTPUT) {
-    pin_modes_arduino[pin] = DIGITAL_OUTPUT;
     msg = {
-      "command": "set_mode_digital_output",
-      "pin": pin
+      command: "digital_write",
+      pin: pin,
+      value: value,
     };
     msg = JSON.stringify(msg);
-    console.log(msg)
+    console.log(msg);
     clientArduino.send(msg);
   }
+};
 
-  msg = {
-    "command": "digital_write",
-    "pin": pin,
-    "value": value
-  };
-  msg = JSON.stringify(msg);
-  console.log(msg)
-  clientArduino.send(msg);
+SpriteMorph.prototype.ArduinoPMW_write = function (pin, value) {
+  if (!clienteConectadoArduino) {
+    if (!connection_pending_arduino) {
+      globalthis.statusConnectionArduino();
+      connection_pending_arduino = true;
+    }
+  }
+  if (!clienteConectadoArduino) {
+    let callbackEntry = [this.ArduinoPMW_write.bind(this), pin, value];
+    wait_open_arduino.push(callbackEntry);
+  } else {
+    pin = parseInt(pin, 10);
+    // maximum value for Arduino
+    if (pin_modes_arduino[pin] !== PWM) {
+      pin_modes_arduino[pin] = PWM;
+      msg = {
+        command: "set_mode_pwm",
+        pin: pin,
+      };
+      msg = JSON.stringify(msg);
+      console.log(msg);
+      clientArduino.send(msg);
+    }
 
-}
-SpriteMorph.prototype.ArduinoPMW_write = function(pin, value) {
-  // maximum value for Arduino
-  var the_max = 1023;
+    let the_max = 1023;
+    value = parseInt(value, 10);
+    if (value >= 100) value = 100;
+    else if (value <= 0) value = 0;
 
-  pin = parseInt(pin, 10);
-  value = parseInt(value, 10);
+    // calculate the value based on percentage
+    value = the_max * (value / 100);
+    value = Math.round(value);
 
-  if (value > 100)
-    value = 100;
-  else if (value < 0)
-    value = 0;
-
-  // calculate the value based on percentage
-  value = the_max * (value / 100);
-  value = Math.round(value);
-  if (pin_modes_arduino[pin] !== PWM) {
-    pin_modes_arduino[pin] = PWM;
     msg = {
-      "command": "set_mode_pwm",
-      "pin": pin
+      command: "pwm_write",
+      pin: pin,
+      value: value,
     };
     msg = JSON.stringify(msg);
-    console.log(msg)
+    console.log(msg);
     clientArduino.send(msg);
   }
+};
 
-  msg = {
-    "command": "pwm_write",
-    "pin": pin,
-    "value": value
-  };
-  msg = JSON.stringify(msg);
-  console.log(msg)
-  clientArduino.send(msg);
-
-}
-SpriteMorph.prototype.ArduinoTone_on = function(pin, freq, duration) {
-  pin = parseInt(pin, 10);
-  freq = parseInt(freq, 10);
-  duration = parseInt(duration, 10);
-  // make sure duration maximum is 5 seconds
-  if (duration > 5000) {
-    duration = 5000;
+SpriteMorph.prototype.ArduinoTone_on = function (pin, freq, duration) {
+  if (!clienteConectadoArduino) {
+    if (!connection_pending_arduino) {
+      globalthis.statusConnectionArduino();
+      connection_pending_arduino = true;
+    }
   }
+  if (!clienteConectadoArduino) {
+    let callbackEntry = [this.ArduinoTone_on.bind(this), pin, freq, duration];
+    wait_open_arduino.push(callbackEntry);
+  } else {
+    pin = parseInt(pin, 10);
+    freq = parseInt(freq, 10);
+    duration = parseInt(duration, 10);
+    // make sure duration maximum is 5 seconds
+    if (duration > 5000) {
+      duration = 5000;
+    }
 
-  if (pin_modes_arduino[pin] !== TONE) {
-    pin_modes_arduino[pin] = TONE;
+    if (pin_modes_arduino[pin] !== TONE) {
+      pin_modes_arduino[pin] = TONE;
+      msg = {
+        command: "set_mode_tone",
+        pin: pin,
+      };
+      msg = JSON.stringify(msg);
+      console.log(msg);
+      clientArduino.send(msg);
+    }
+
     msg = {
-      "command": "set_mode_tone",
-      "pin": pin
+      command: "play_tone",
+      pin: pin,
+      freq: freq,
+      duration: duration,
     };
     msg = JSON.stringify(msg);
-    console.log(msg)
     clientArduino.send(msg);
   }
+};
+SpriteMorph.prototype.ArduinoServo = function (pin, angle) {
+  if (!clienteConectadoArduino) {
+    if (!connection_pending_arduino) {
+      globalthis.statusConnectionArduino();
+      connection_pending_arduino = true;
+    }
+  }
+  if (!clienteConectadoArduino) {
+    let callbackEntry = [this.ArduinoServo.bind(this), pin, angle];
+    wait_open_arduino.push(callbackEntry);
+  } else {
+    pin = parseInt(pin, 10);
+    angle = parseInt(angle, 10);
 
-  msg = {
-    "command": "play_tone",
-    "pin": pin,
-    'freq': freq,
-    'duration': duration
-  };
-  msg = JSON.stringify(msg);
-  clientArduino.send(msg);
+    if (angle > 200) angle = 200;
+    else if (angle < 0) angle = 0;
 
-}
-SpriteMorph.prototype.ArduinoServo = function(pin, angle) {
-  pin = parseInt(pin, 10);
-  angle = parseInt(angle, 10);
-
-  if (angle > 200)
-    angle = 200;
-  else if (angle < 0)
-    angle = 0;
-
-  if (pin_modes_arduino[pin] !== SERVO) {
-    pin_modes_arduino[pin] = SERVO;
+    if (pin_modes_arduino[pin] !== SERVO) {
+      pin_modes_arduino[pin] = SERVO;
+      msg = {
+        command: "set_mode_servo",
+        pin: pin,
+      };
+      msg = JSON.stringify(msg);
+      console.log(msg);
+      clientArduino.send(msg);
+    }
     msg = {
-      "command": "set_mode_servo",
-      "pin": pin
+      command: "servo_position",
+      pin: pin,
+      position: angle,
     };
     msg = JSON.stringify(msg);
-    console.log(msg)
+    console.log(msg);
     clientArduino.send(msg);
   }
-  msg = {
-    'command': 'servo_position',
-    "pin": pin,
-    'position': angle
-  };
-  msg = JSON.stringify(msg);
-  console.log(msg)
-  clientArduino.send(msg);
-
-}
-
-SpriteMorph.prototype.ArduinoAnalog_Read = function(pin) {
-  pin = parseInt(pin.split("")[1]);
-  //pin = parseInt(pin);
-  //console.log(pin);
-
-  if (pin_modes_arduino[pin] !== ANALOG_INPUT) {
-    pin_modes_arduino[pin] = ANALOG_INPUT;
-    msg = {
-      "command": "set_mode_analog_input",
-      "pin": pin
-    };
-    msg = JSON.stringify(msg);
-    console.log(msg)
-    clientArduino.send(msg);
+};
+var globalthis = this;
+SpriteMorph.prototype.ArduinoAnalog_Read = function (pin) {
+  if (!clienteConectadoArduino) {
+    if (!connection_pending_arduino) {
+      globalthis.statusConnectionArduino();
+      connection_pending_arduino = true;
+    }
   }
-  //console.log('analog_inputs_arduino[pin]; ' + analog_inputs_arduino[pin])
-  return analog_inputs_arduino[pin];
-
-}
-SpriteMorph.prototype.ArduinoDigital_Read = function(pin) {
-  pin = parseInt(pin, 10);
-
-  if (pin_modes_arduino[pin] !== DIGITAL_INPUT) {
-    pin_modes_arduino[pin] = DIGITAL_INPUT;
-    msg = {
-      "command": "set_mode_digital_input",
-      "pin": pin
-    };
-    msg = JSON.stringify(msg);
-    console.log(msg)
-    clientArduino.send(msg);
+  if (!clienteConectadoArduino) {
+    let callbackEntry = [this.ArduinoAnalog_Read.bind(this), pin];
+    wait_open_arduino.push(callbackEntry);
+  } else {
+    pin = parseInt(pin.split("")[1], 10);
+    if (pin_modes_arduino[pin] !== ANALOG_INPUT) {
+      pin_modes_arduino[pin] = ANALOG_INPUT;
+      msg = {
+        command: "set_mode_analog_input",
+        pin: pin,
+      };
+      msg = JSON.stringify(msg);
+      console.log(msg);
+      clientArduino.send(msg);
+    }
+    //console.log('analog_inputs_arduino[pin]; ' + analog_inputs_arduino[pin])
+    return analog_inputs_arduino[pin];
   }
-
-  return digital_inputs_arduino[pin];
-
-}
-SpriteMorph.prototype.ArduinoSonar_read = function(trigger_pin, echo_pin) {
-  trigger_pin = parseInt(trigger_pin, 10);
-  sonar_report_pin = trigger_pin;
-
-  echo_pin = parseInt(echo_pin, 10);
-
-  if (pin_modes_arduino[trigger_pin] !== SONAR) {
-    pin_modes_arduino[trigger_pin] = SONAR;
-    msg = {
-      "command": "set_mode_sonar",
-      "trigger_pin": trigger_pin,
-      "echo_pin": echo_pin
-    };
-    msg = JSON.stringify(msg);
-    console.log(msg)
-    clientArduino.send(msg);
+};
+/home/gabriel/Desktop/Snap--Build-Your-Own-Blocks/mm/objects.js
+SpriteMorph.prototype.ArduinoDigital_Read = function (pin) {
+  if (!clienteConectadoArduino) {
+    if (!connection_pending_arduino) {
+      globalthis.statusConnectionArduino();
+      connection_pending_arduino = true;
+    }
   }
+  if (!clienteConectadoArduino) {
+    let callbackEntry = [this.ArduinoDigital_Read.bind(this), pin];
+    wait_open_arduino.push(callbackEntry);
+  } else {
+    pin = parseInt(pin, 10);
+    if (pin_modes_arduino[pin] !== DIGITAL_INPUT) {
+      pin_modes_arduino[pin] = DIGITAL_INPUT;
+      msg = {
+        command: "set_mode_digital_input",
+        pin: pin,
+      };
+      msg = JSON.stringify(msg);
+      console.log(msg);
+      clientArduino.send(msg);
+    }
 
-  return digital_inputs_arduino[sonar_report_pin];
+    return digital_inputs_arduino[pin];
+  }
+};
+SpriteMorph.prototype.ArduinoSonar_read = function (trigger_pin, echo_pin) {
+  if (!clienteConectadoArduino) {
+    if (!connection_pending_arduino) {
+      globalthis.statusConnectionArduino();
+      connection_pending_arduino = true;
+    }
+  }
+  if (!clienteConectadoArduino) {
+    let callbackEntry = [
+      this.ArduinoSonar_read.bind(this),
+      trigger_pin,
+      echo_pin,
+    ];
+    wait_open_arduino.push(callbackEntry);
+  } else {
+    pin = parseInt(pin, 10);
+    trigger_pin = parseInt(trigger_pin, 10);
+    sonar_report_pin = trigger_pin;
 
-}
+    echo_pin = parseInt(echo_pin, 10);
+
+    if (pin_modes_arduino[trigger_pin] !== SONAR) {
+      pin_modes_arduino[trigger_pin] = SONAR;
+      msg = {
+        command: "set_mode_sonar",
+        trigger_pin: trigger_pin,
+        echo_pin: echo_pin,
+      };
+      msg = JSON.stringify(msg);
+      console.log(msg);
+      clientArduino.send(msg);
+    }
+
+    return digital_inputs_arduino[sonar_report_pin];
+  }
+};
 
 
 SpriteMorph.prototype.RaspberryPiReportConnected = function() {
-  //var sprite = this.blockReceiver();
-  return isRpiReady();
+  if (!clienteConectadoRaspberryPi) {
+    if (!connection_pending_rpi) {
+      globalthis.statusConnectionRaspberryPi();
+      connection_pending_rpi = true;
+    }
+  }
+  if (!clienteConectadoRaspberryPi) {
+    let callbackEntry = [this.RaspberryPiReportConnected.bind(this)];
+    wait_open_rpi.push(callbackEntry);
+  } else {
+    return isRpiReady();
+  }
 }
-// function sleep(milliseconds) {
-//     var start = new Date().getTime();
-//     for (var i = 0; i < 1e7; i++) {
-//         if ((new Date().getTime() - start) > milliseconds){
-//             break;
-//         }
-//     }
-// }
 
 SpriteMorph.prototype.RpiRemoteIP = function(station) {
   //KNOWN ISSUE.. precisa fechar a velha antes de abir uma nova, teste abaixo nao funciona
@@ -1140,7 +1218,6 @@ SpriteMorph.prototype.RpiRemoteIP = function(station) {
       console.log('Erro ao tentar recuperar sala = ' + e);
     }
 
-
     //classNum = parseInt(classNum, 10);
     //station = parseInt(station, 10);
 
@@ -1157,168 +1234,227 @@ SpriteMorph.prototype.RpiRemoteIP = function(station) {
 
 }
 
-SpriteMorph.prototype.RpiDigital_write = function(pin, value) {
-  pin = parseInt(pin, 10);
-  value = parseInt(value, 10);
+SpriteMorph.prototype.RpiDigital_write = function (pin, value) {
+  if (!clienteConectadoRaspberryPi) {
+    if (!connection_pending_rpi) {
+      globalthis.statusConnectionRaspberryPi();
+      connection_pending_rpi = true;
+    }
+  }
+  if (!clienteConectadoRaspberryPi) {
+    let callbackEntry = [this.RpiDigital_write.bind(this), pin, value];
+    wait_open_rpi.push(callbackEntry);
+  } else {
+    pin = parseInt(pin, 10);
 
-  if (value > 1)
-    value = 1;
-  else if (value < 0)
-    value = 0;
+    if (pin_modes[pin] !== DIGITAL_OUTPUT) {
+      pin_modes[pin] = DIGITAL_OUTPUT;
+      msg = {
+        command: "set_mode_digital_output",
+        pin: pin,
+      };
+      msg = JSON.stringify(msg);
+      clientRaspberryPi.send(msg);
+    }
 
-  if (pin_modes[pin] !== DIGITAL_OUTPUT) {
-    pin_modes[pin] = DIGITAL_OUTPUT;
+    value = parseInt(value, 10);
+
+    if (value > 1) value = 1;
+    else if (value < 0) value = 0;
+
     msg = {
-      "command": "set_mode_digital_output",
-      "pin": pin
+      command: "digital_write",
+      pin: pin,
+      value: value,
+    };
+    msg = JSON.stringify(msg);
+    console.log(msg);
+    clientRaspberryPi.send(msg);
+  }
+};
+SpriteMorph.prototype.RpiPMW_write = function (pin, value) {
+  if (!clienteConectadoRaspberryPi) {
+    if (!connection_pending_rpi) {
+      globalthis.statusConnectionRaspberryPi();
+      connection_pending_rpi = true;
+    }
+  }
+  if (!clienteConectadoRaspberryPi) {
+    let callbackEntry = [this.RpiPMW_write.bind(this), pin, value];
+    wait_open_rpi.push(callbackEntry);
+  } else {
+    pin = parseInt(pin, 10);
+
+    if (pin_modes[pin] !== PWM) {
+      pin_modes[pin] = PWM;
+      msg = {
+        command: "set_mode_pwm",
+        pin: pin,
+      };
+      msg = JSON.stringify(msg);
+      clientRaspberryPi.send(msg);
+    }
+
+    // maximum value for RPi
+    let the_max = 254;
+    value = parseInt(value, 10);
+
+    if (value > 100) value = 100;
+    else if (value < 0) value = 0;
+
+    // calculate the value based on percentage
+    value = the_max * (value / 100);
+    value = Math.round(value);
+
+    msg = {
+      command: "pwm_write",
+      pin: pin,
+      value: value,
+    };
+    msg = JSON.stringify(msg);
+    console.log(msg);
+    clientRaspberryPi.send(msg);
+  }
+};
+
+SpriteMorph.prototype.RpiTone_on = function (pin, freq, duration) {
+  if (!clienteConectadoRaspberryPi) {
+    if (!connection_pending_rpi) {
+      globalthis.statusConnectionRaspberryPi();
+      connection_pending_rpi = true;
+    }
+  }
+  if (!clienteConectadoRaspberryPi) {
+    let callbackEntry = [this.RpiTone_on.bind(this), pin, freq, duration];
+    wait_open_rpi.push(callbackEntry);
+  } else {
+    pin = parseInt(pin, 10);
+
+    if (pin_modes[pin] !== TONE) {
+      pin_modes[pin] = TONE;
+      msg = {
+        command: "set_mode_tone",
+        pin: pin,
+      };
+      msg = JSON.stringify(msg);
+      console.log(msg);
+      clientRaspberryPi.send(msg);
+    }
+
+    freq = parseInt(freq, 10);
+    duration = parseInt(duration, 10);
+    // make sure maximum duration is 5 seconds
+    if (duration > 5000) {
+      duration = 5000;
+    }
+
+    msg = {
+      command: "play_tone",
+      pin: pin,
+      freq: freq,
+      duration: duration,
     };
     msg = JSON.stringify(msg);
     clientRaspberryPi.send(msg);
   }
+};
 
-  msg = {
-    "command": "digital_write",
-    "pin": pin,
-    "value": value
-  };
-  msg = JSON.stringify(msg);
-  console.log(msg)
-  clientRaspberryPi.send(msg);
+SpriteMorph.prototype.RpiServo = function (pin, angle) {
+  if (!clienteConectadoRaspberryPi) {
+    if (!connection_pending_rpi) {
+      globalthis.statusConnectionRaspberryPi();
+      connection_pending_rpi = true;
+    }
+  }
+  if (!clienteConectadoRaspberryPi) {
+    let callbackEntry = [this.RpiServo.bind(this), pin, angle];
+    wait_open_rpi.push(callbackEntry);
+  } else {
+    pin = parseInt(pin, 10);
 
-}
-SpriteMorph.prototype.RpiPMW_write = function(pin, value) {
-  // maximum value for RPi
-  var the_max = 254;
+    if (pin_modes[pin] !== SERVO) {
+      pin_modes[pin] = SERVO;
+      msg = {
+        command: "set_mode_servo",
+        pin: pin,
+      };
+      msg = JSON.stringify(msg);
+      clientRaspberryPi.send(msg);
+    }
 
-  pin = parseInt(pin, 10);
-  value = parseInt(value, 10);
+    angle = parseInt(angle, 10);
 
-  if (value > 100)
-    value = 100;
-  else if (value < 0)
-    value = 0;
+    if (angle > 200) angle = 200;
+    else if (angle < 0) angle = 0;
 
-  // calculate the value based on percentage
-  value = the_max * (value / 100);
-  value = Math.round(value);
-  if (pin_modes[pin] !== PWM) {
-    pin_modes[pin] = PWM;
     msg = {
-      "command": "set_mode_pwm",
-      "pin": pin
+      command: "servo_position",
+      pin: pin,
+      position: angle,
     };
+
     msg = JSON.stringify(msg);
+    console.log(msg);
     clientRaspberryPi.send(msg);
   }
-
-  msg = {
-    "command": "pwm_write",
-    "pin": pin,
-    "value": value
-  };
-  msg = JSON.stringify(msg);
-  console.log(msg)
-  clientRaspberryPi.send(msg);
-
-}
-SpriteMorph.prototype.RpiTone_on = function(pin, freq, duration) {
-  pin = parseInt(pin, 10);
-  freq = parseInt(freq, 10);
-  duration = parseInt(duration, 10);
-  // make sure duration maximum is 5 seconds
-  if (duration > 5000) {
-    duration = 5000;
+};
+SpriteMorph.prototype.RpiDigital_Read = function (pin) {
+  if (!clienteConectadoRaspberryPi) {
+    if (!connection_pending_rpi) {
+      globalthis.statusConnectionRaspberryPi();
+      connection_pending_rpi = true;
+    }
   }
+  if (!clienteConectadoRaspberryPi) {
+    let callbackEntry = [this.RpiDigital_Read.bind(this), pin];
+    wait_open_rpi.push(callbackEntry);
+  } else {
+    pin = parseInt(pin, 10);
 
-  if (pin_modes[pin] !== TONE) {
-    pin_modes[pin] = TONE;
-    msg = {
-      "command": "set_mode_tone",
-      "pin": pin
-    };
-    msg = JSON.stringify(msg);
-    console.log(msg)
-    clientRaspberryPi.send(msg);
+    if (pin_modes[pin] !== DIGITAL_INPUT) {
+      pin_modes[pin] = DIGITAL_INPUT;
+      msg = {
+        command: "set_mode_digital_input",
+        pin: pin,
+      };
+      msg = JSON.stringify(msg);
+      clientRaspberryPi.send(msg);
+    }
+
+    return digital_inputs[pin];
   }
+};
 
-  msg = {
-    "command": "play_tone",
-    "pin": pin,
-    'freq': freq,
-    'duration': duration
-  };
-  msg = JSON.stringify(msg);
-  clientRaspberryPi.send(msg);
-
-}
-SpriteMorph.prototype.RpiServo = function(pin, angle) {
-  pin = parseInt(pin, 10);
-  angle = parseInt(angle, 10);
-
-  if (angle > 200)
-    angle = 200;
-  else if (angle < 0)
-    angle = 0;
-
-  if (pin_modes[pin] !== SERVO) {
-    pin_modes[pin] = SERVO;
-    msg = {
-      "command": "set_mode_servo",
-      "pin": pin
-    };
-    msg = JSON.stringify(msg);
-    clientRaspberryPi.send(msg);
+SpriteMorph.prototype.RpiSonar_read = function (trigger_pin, echo_pin) {
+  if (!clienteConectadoRaspberryPi) {
+    if (!connection_pending_rpi) {
+      globalthis.statusConnectionRaspberryPi();
+      connection_pending_rpi = true;
+    }
   }
+  if (!clienteConectadoRaspberryPi) {
+    let callbackEntry = [this.RpiSonar_read.bind(this), trigger_pin, echo_pin];
+    wait_open_rpi.push(callbackEntry);
+  } else {
+    trigger_pin = parseInt(trigger_pin, 10);
+    sonar_report_pin = trigger_pin;
 
-  msg = {
-    'command': 'servo_position',
-    "pin": pin,
-    'position': angle
-  };
+    echo_pin = parseInt(echo_pin, 10);
 
-  msg = JSON.stringify(msg);
-  console.log(msg)
-  clientRaspberryPi.send(msg);
+    if (pin_modes[trigger_pin] !== SONAR) {
+      pin_modes[trigger_pin] = SONAR;
+      msg = {
+        command: "set_mode_sonar",
+        trigger_pin: trigger_pin,
+        echo_pin: echo_pin,
+      };
+      msg = JSON.stringify(msg);
+      clientRaspberryPi.send(msg);
+    }
 
-}
-SpriteMorph.prototype.RpiDigital_Read = function(pin) {
-  pin = parseInt(pin, 10);
-
-  if (pin_modes[pin] !== DIGITAL_INPUT) {
-    pin_modes[pin] = DIGITAL_INPUT;
-    msg = {
-      "command": "set_mode_digital_input",
-      "pin": pin
-    };
-    msg = JSON.stringify(msg);
-    clientRaspberryPi.send(msg);
+    return digital_inputs[sonar_report_pin];
   }
-
-  return digital_inputs[pin];
-
-}
-SpriteMorph.prototype.RpiSonar_read = function(trigger_pin, echo_pin) {
-  trigger_pin = parseInt(trigger_pin, 10);
-  sonar_report_pin = trigger_pin;
-
-  echo_pin = parseInt(echo_pin, 10);
-
-  if (pin_modes[trigger_pin] !== SONAR) {
-    pin_modes[trigger_pin] = SONAR;
-    msg = {
-      "command": "set_mode_sonar",
-      "trigger_pin": trigger_pin,
-      "echo_pin": echo_pin
-    };
-    msg = JSON.stringify(msg);
-    clientRaspberryPi.send(msg);
-  }
-
-  return digital_inputs[sonar_report_pin];
-
-}
-
-
+};
 
 SpriteMorph.prototype.SpheroLED = function(cor) {
   var comando = COLOR;
