@@ -124,7 +124,7 @@ function statusConnectionRaspberryPi(urlConexaoRaspberryPiArg) {
     clientRaspberryPi.onclose = function (e) {
       digital_inputs.fill(-1);
       analog_inputs.fill(-1);
-      pin_modes.fill(-1);
+      pin_modes_rpi.fill(-1);
       wait_open_rpi = [];
       if (alerted === false) {
         alerted = true;
@@ -156,7 +156,7 @@ function statusConnectionRaspberryPi(urlConexaoRaspberryPiArg) {
         analog_inputs_rpi[pin] = value;
       } else if (report_type === "sonar_data") {
         value = msg_rpi["value"];
-        digital_inputs_rpi[sonar_report_pin] = value;
+        digital_inputs_rpi[sonar_report_pin_rpi] = value;
       }
     };
 

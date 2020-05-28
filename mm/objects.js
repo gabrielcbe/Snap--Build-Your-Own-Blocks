@@ -955,6 +955,12 @@ SpriteMorph.prototype.ArduinoDigital_write = function (pin, value) {
     };
     msg = JSON.stringify(msg);
     console.log(msg);
+    if(digital_inputs_arduino[pin] != value){
+      console.log('valor mudou')
+      digital_inputs_arduino[pin] == value
+    }else{
+      console.log('valor era igual')
+    }
     clientArduino.send(msg);
   }
 };
@@ -999,6 +1005,12 @@ SpriteMorph.prototype.ArduinoPMW_write = function (pin, value) {
     };
     msg = JSON.stringify(msg);
     console.log(msg);
+    if(analog_inputs_arduino[pin] != value){
+      console.log('valor mudou')
+      analog_inputs_arduino[pin] == value
+    }else{
+      console.log('valor era igual')
+    }
     clientArduino.send(msg);
   }
 };
@@ -1107,7 +1119,7 @@ SpriteMorph.prototype.ArduinoAnalog_Read = function (pin) {
     return analog_inputs_arduino[pin];
   }
 };
-/home/gabriel/Desktop/Snap--Build-Your-Own-Blocks/mm/objects.js
+
 SpriteMorph.prototype.ArduinoDigital_Read = function (pin) {
   if (!clienteConectadoArduino) {
     if (!connection_pending_arduino) {
@@ -1151,7 +1163,7 @@ SpriteMorph.prototype.ArduinoSonar_read = function (trigger_pin, echo_pin) {
   } else {
     pin = parseInt(pin, 10);
     trigger_pin = parseInt(trigger_pin, 10);
-    sonar_report_pin = trigger_pin;
+    sonar_report_pin_arduino = trigger_pin;
 
     echo_pin = parseInt(echo_pin, 10);
 
@@ -1167,7 +1179,7 @@ SpriteMorph.prototype.ArduinoSonar_read = function (trigger_pin, echo_pin) {
       clientArduino.send(msg);
     }
 
-    return digital_inputs_arduino[sonar_report_pin];
+    return digital_inputs_arduino[sonar_report_pin_arduino];
   }
 };
 
@@ -1247,8 +1259,8 @@ SpriteMorph.prototype.RpiDigital_write = function (pin, value) {
   } else {
     pin = parseInt(pin, 10);
 
-    if (pin_modes[pin] !== DIGITAL_OUTPUT) {
-      pin_modes[pin] = DIGITAL_OUTPUT;
+    if (pin_modes_rpi[pin] !== DIGITAL_OUTPUT) {
+      pin_modes_rpi[pin] = DIGITAL_OUTPUT;
       msg = {
         command: "set_mode_digital_output",
         pin: pin,
@@ -1269,6 +1281,12 @@ SpriteMorph.prototype.RpiDigital_write = function (pin, value) {
     };
     msg = JSON.stringify(msg);
     console.log(msg);
+    if(digital_inputs_rpi[pin] != value){
+      console.log('valor mudou')
+      digital_inputs_rpi[pin] == value
+    }else{
+      console.log('valor era igual')
+    }
     clientRaspberryPi.send(msg);
   }
 };
@@ -1285,8 +1303,8 @@ SpriteMorph.prototype.RpiPMW_write = function (pin, value) {
   } else {
     pin = parseInt(pin, 10);
 
-    if (pin_modes[pin] !== PWM) {
-      pin_modes[pin] = PWM;
+    if (pin_modes_rpi[pin] !== PWM) {
+      pin_modes_rpi[pin] = PWM;
       msg = {
         command: "set_mode_pwm",
         pin: pin,
@@ -1313,6 +1331,13 @@ SpriteMorph.prototype.RpiPMW_write = function (pin, value) {
     };
     msg = JSON.stringify(msg);
     console.log(msg);
+
+    if(analog_inputs_rpi[pin] != value){
+      console.log('valor mudou')
+      analog_inputs_rpi[pin] == value
+    }else{
+      console.log('valor era igual')
+    }
     clientRaspberryPi.send(msg);
   }
 };
@@ -1330,8 +1355,8 @@ SpriteMorph.prototype.RpiTone_on = function (pin, freq, duration) {
   } else {
     pin = parseInt(pin, 10);
 
-    if (pin_modes[pin] !== TONE) {
-      pin_modes[pin] = TONE;
+    if (pin_modes_rpi[pin] !== TONE) {
+      pin_modes_rpi[pin] = TONE;
       msg = {
         command: "set_mode_tone",
         pin: pin,
@@ -1372,8 +1397,8 @@ SpriteMorph.prototype.RpiServo = function (pin, angle) {
   } else {
     pin = parseInt(pin, 10);
 
-    if (pin_modes[pin] !== SERVO) {
-      pin_modes[pin] = SERVO;
+    if (pin_modes_rpi[pin] !== SERVO) {
+      pin_modes_rpi[pin] = SERVO;
       msg = {
         command: "set_mode_servo",
         pin: pin,
@@ -1411,8 +1436,8 @@ SpriteMorph.prototype.RpiDigital_Read = function (pin) {
   } else {
     pin = parseInt(pin, 10);
 
-    if (pin_modes[pin] !== DIGITAL_INPUT) {
-      pin_modes[pin] = DIGITAL_INPUT;
+    if (pin_modes_rpi[pin] !== DIGITAL_INPUT) {
+      pin_modes_rpi[pin] = DIGITAL_INPUT;
       msg = {
         command: "set_mode_digital_input",
         pin: pin,
@@ -1437,12 +1462,12 @@ SpriteMorph.prototype.RpiSonar_read = function (trigger_pin, echo_pin) {
     wait_open_rpi.push(callbackEntry);
   } else {
     trigger_pin = parseInt(trigger_pin, 10);
-    sonar_report_pin = trigger_pin;
+    sonar_report_pin_rpi = trigger_pin;
 
     echo_pin = parseInt(echo_pin, 10);
 
-    if (pin_modes[trigger_pin] !== SONAR) {
-      pin_modes[trigger_pin] = SONAR;
+    if (pin_modes_rpi[trigger_pin] !== SONAR) {
+      pin_modes_rpi[trigger_pin] = SONAR;
       msg = {
         command: "set_mode_sonar",
         trigger_pin: trigger_pin,
@@ -1452,7 +1477,7 @@ SpriteMorph.prototype.RpiSonar_read = function (trigger_pin, echo_pin) {
       clientRaspberryPi.send(msg);
     }
 
-    return digital_inputs[sonar_report_pin];
+    return digital_inputs[sonar_report_pin_rpi];
   }
 };
 
