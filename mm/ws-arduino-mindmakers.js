@@ -1,43 +1,48 @@
 ///////////// Codigo Arduino
 
-var clientArduino = null;
-var PORTA_Arduino = 9000;
-var urlConexaoRecenteArduino = "";
-var clienteConectadoArduino = false;
+let clientArduino = null;
+const PORTA_Arduino = 9000;
+let urlConexaoRecenteArduino = "";
+let clienteConectadoArduino = false;
 
-// var DIGITAL_INPUT = 1;   //Alreaty defined in ws-gpio-mindmakers.js
-// var DIGITAL_OUTPUT = 2;
-// var PWM = 3;
-// var SERVO = 4;
-// var TONE = 5;
-// var SONAR = 6;
-// var ANALOG_INPUT = 7;
+const DIGITAL_INPUT_arduino = 1; //Alreaty defined in ws-gpio-mindmakers.js
+const DIGITAL_OUTPUT_arduino = 2;
+const PWM_arduino = 3;
+const SERVO_arduino = 4;
+const TONE_arduino = 5;
+const SONAR_arduino = 6;
+const ANALOG_INPUT_arduino = 7;
 
 // an array to save the current pin mode
 // this is common to all board types since it contains enough
 // entries for all the boards.
 // Modes are listed above - initialize to invalid mode of -1
-var pin_modes_arduino = new Array(30).fill(-1);
+let pin_modes_arduino = new Array(30).fill(-1);
 
-// var connection_pending = false;
+// has an websocket message already been received
+let alerted_arduino = false;
+
+let connection_pending_arduino = false;
 
 // general outgoing websocket message holder
-var msg_arduino = null;
+let msg_arduino = null;
 
 // the pin assigned to the sonar trigger
 // initially set to -1, an illegal value
-var sonar_report_pin_arduino = -1;
+let sonar_report_pin_arduino = -1;
 
 // arrays to hold input values
-var digital_inputs_arduino = new Array(32);
-var analog_inputs_arduino = new Array(8);
+let digital_inputs_arduino = new Array(32);
+let analog_inputs_arduino = new Array(8);
 
 // flag to indicate if a websocket connect was
 // ever attempted.
-var connect_attempt_arduino = false;
+let connect_attempt_arduino = false;
 
 // an array to buffer operations until socket is opened
-var wait_open_arduino = [];
+let wait_open_arduino = [];
+
+let urlConexaoArduinoArg = "127.0.0.1";
 
 function isBoardReady() {
   return clienteConectadoArduino;
@@ -45,128 +50,167 @@ function isBoardReady() {
 
 function registraDesconexaoArduino(dado) {
   if (dado !== undefined) {
-    console.log('Entrou para deregistrarArduino: ' + JSON.stringify(dado));
+    console.log("Entrou para deregistrarArduino: " + JSON.stringify(dado));
   }
   clienteConectadoArduino = false;
   clientArduino.close();
-
 }
-
 
 //----Inicia websocket----//
 
 function statusConnectionArduino(urlConexaoArduinoArg) {
-  if (!urlConexaoArduinoArg || urlConexaoArduinoArg == "" || urlConexaoArduinoArg == "localhost") {
-    urlConexaoRecenteArduino = 'localhost';
-  } else if (urlConexaoArduinoArg.indexOf('.local') == -1) {
-    urlConexaoRecenteArduino = urlConexaoArduinoArg + '.local';
+  if (
+    !urlConexaoArduinoArg ||
+    urlConexaoArduinoArg == "" ||
+    urlConexaoArduinoArg == "localhost"
+  ) {
+    urlConexaoRecenteArduino = "localhost";
+  } else if (urlConexaoArduinoArg.indexOf(".local") == -1) {
+    urlConexaoRecenteArduino = urlConexaoArduinoArg + ".local";
   }
 
   if (clienteConectadoArduino) {
-    //alert('WS client already connected ' + JSON.stringify(clientArduino));
+    // ignore additional connection attempts
     return;
-
   } else {
     connect_attempt_arduino = true;
 
-    clientArduino = new WebSocket("ws://" + urlConexaoRecenteArduino + ":" + PORTA_Arduino);
-    console.log('WebSocket Client Trying to Connect on Port: ' + PORTA_Arduino);
-    var msg_arduino = JSON.stringify({
-      "id": "to_arduino_gateway"
+    let url = "ws://" + urlConexaoRecenteArduino + ":" + PORTA_Arduino;
+
+    clientArduino = new WebSocket(url);
+
+    msg_arduino = JSON.stringify({
+      id: "to_arduino_gateway",
     });
 
-    clientArduino.onopen = function() {
-      alert('Arduino Connected')
-      digital_inputs_arduino.fill(0);
+    clientArduino.onopen = function () {
+      msg_arduino = JSON.stringify({
+        id: "to_arduino_gateway",
+      });
 
-      analog_inputs_arduino.fill(0);
-      // connection compvare
+      digital_inputs_arduino.fill(-1);
+      analog_inputs_arduino.fill(-1);
+      pin_modes_arduino.fill(-1);
+
+      // connection compare
       clienteConectadoArduino = true;
       connect_attempt_arduino = true;
-      // the message is built above
-      clientArduino.send(msg_arduino);
+      try {
+        // the message is built above
+        clientArduino.send(msg_arduino);
+        console.log("Conectado ao Arduino: ");
+        connection_pending_arduino = false;
+        //alert("Arduino Connected");
+      } catch (err) {
+        console.log("erro ao conectar: ", err);
+        // ignore this exception
+      }
 
-      console.log('WebSocket Client Connected on Port: ' + PORTA_Arduino)
-      for (var index = 0; index < wait_open_arduino.length; index++) {
-        var data = wait_open_arduino[index];
-        data[0](data[1]);
+      console.log("WebSocket Client Connected on Port: " + PORTA_Arduino);
+      for (let index = 0; index < wait_open_arduino.length; index++) {
+        let data = wait_open_arduino[index];
+        //send command after connection
+        console.log("wait_open_arduino data:", data);
+        //console.log('tamanho de data',data.length)
+        if (data.length == 1) data[0]();
+        else if (data.length == 2) data[0](data[1]);
+        else if (data.length == 3) data[0](data[1], data[2]);
+        else if (data.length == 4) data[0](data[1], data[2], data[3]);
+        else if (data.length == 5) data[0](data[1], data[2], data[3], data[4]);
+        else console.log("tamanho de data icompativel:", data.length);
       }
     };
 
-    clientArduino.onclose = function(e) {
-      console.log("Conexão Arduino fechada.");
+    clientArduino.onclose = function (e) {
+      digital_inputs_arduino.fill(-1);
+      analog_inputs_arduino.fill(-1);
+      pin_modes_arduino.fill(-1);
+      wait_open_arduino = [];
+      if (alerted === false) {
+        alerted = true;
+        alert("Conexão Arduino fechada.");
+      }
       clienteConectadoArduino = false;
+      connection_pending_arduino = false;
       registraDesconexaoArduino(e);
     };
 
-    clientArduino.onmessage = function(message) {
+    clientArduino.onmessage = function (message) {
       clienteConectadoArduino = true;
 
       msg_arduino = JSON.parse(message.data);
-      var report_type = msg_arduino["report"];
-      var pin = null;
-      var value = null;
-      //console.log('mensagem arduino'+JSON.stringify(msg_arduino))
-      //console.log('report_type; ' +report_type)
+      let report_type = msg_arduino["report"];
+      let pin = null;
+      let value = null;
 
       // types - digital, analog, sonar
-      if (report_type === 'digital_input') {
-        pin = msg_arduino['pin'];
+      if (report_type === "digital_input") {
+        pin = msg_arduino["pin"];
         pin = parseInt(pin, 10);
-        value = msg_arduino['value'];
+        value = msg_arduino["value"];
         digital_inputs_arduino[pin] = value;
-      } else if (report_type === 'analog_input') {
-        pin = msg_arduino['pin'];
+      } else if (report_type === "analog_input") {
+        pin = msg_arduino["pin"];
         pin = parseInt(pin, 10);
-        value = msg_arduino['value'];
+        value = msg_arduino["value"];
         analog_inputs_arduino[pin] = value;
-      } else if (report_type === 'sonar_data') {
-        value = msg_arduino['value'];
+      } else if (report_type === "sonar_data") {
+        value = msg_arduino["value"];
         digital_inputs_arduino[sonar_report_pin_arduino] = value;
       }
-
     };
 
-    clientArduino.onerror = function(error) {
-      alert('Erro de conexão na porta: ' + PORTA_Arduino);
+    clientArduino.onerror = function (error) {
+      alert("Erro de conexão na porta: " + PORTA_Arduino);
+      console.log("Erro WS_arduino: ", error);
       clienteConectadoArduino = false;
+      connection_pending_arduino = false;
       registraDesconexaoArduino(error);
     };
-
   }
-};
+}
 
+function sendMessageArduino(
+  comandoArduino,
+  pinArduino,
+  valorArduino,
+  cb
+) {
+  //alert(comandoRaspberryPi + ',' + valorRaspberryPi)
 
-function sendMessageArduino(comandoArduino, pinArduino, valorArduino, cb) {
-  //alert(comandoArduino + ',' + valorArduino)
+  waitForSocketConnectionArduino(clientArduino, function () {
+    clientArduino.send(
+      JSON.stringify({
+        command: comandoArduino,
+        pin: pinArduino,
+        value: valorArduino,
+      })
+    );
 
-  waitForSocketConnectionArduino(clientArduino, function() {
-    clientArduino.send(JSON.stringify({
-      comando: comandoArduino,
-      pin: pinArduino,
-      valor: valorArduino
-    }));
-
-    waitForSocketConnectionArduino(clientArduino, function() {
-      //console.log('Arduino comando: ' + comandoArduino + ' valor: ' + valorArduino);
+    waitForSocketConnectionArduino(clientArduino, function () {
       if (cb !== undefined) {
-        cb();
+        cb(
+          JSON.stringify({
+            command: comandoArduino,
+            pin: pinArduino,
+            value: valorArduino,
+          })
+        );
       }
     });
-
   });
-};
+}
 
-function waitForSocketConnectionArduino(socket, callback) { //Valida que ws está aberta antes de mandar msg
-  setTimeout(
-    function() {
-      if (socket.readyState === socket.OPEN) {
-        if (callback !== undefined) {
-          callback();
-        }
-        return;
-      } else {
-        waitForSocketConnectionArduino(socket, callback);
+function waitForSocketConnectionArduino(socket, callback) {
+  //validate open ws connection before sending msg
+  setTimeout(function () {
+    if (socket.readyState === socket.OPEN) {
+      if (callback !== undefined) {
+        callback();
       }
-    }, 5);
-};
+      return;
+    } else {
+      waitForSocketConnectionArduino(socket, callback);
+    }
+  }, 5);
+}
