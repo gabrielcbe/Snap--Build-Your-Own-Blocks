@@ -850,60 +850,44 @@ SpriteMorph.prototype.mBotServo = function(connector, slot, angle) {
 }
 
 SpriteMorph.prototype.mBotLed = function(index, red, green, blue) {
-  var now = +new Date();
-  if (now - lastmsg > 1000) { // 1s
-    lastmsg = now;
-    if (red > 255) {
-      red = 255;
-    }
-    if (green > 255) {
-      green = 255;
-    }
-    if (blue > 255) {
-      blue = 255;
-    }
+  if (red > 255) red = 255;
 
-    if (index == "1") {
+  if (green > 255) green = 255;
 
-      var comando = LEDLEFT;
-      var valor = red + "," + green + "," + blue;
-      sendMessagemBot(comando, valor);
+  if (blue > 255) blue = 255;
 
-    } else if (index == "2") {
-
-      var comando = LEDRIGHT;
-      var valor = red + "," + green + "," + blue;
-      sendMessagemBot(comando, valor);
-
-    } else {
-
-      var comando = LEDBOTH;
-      var valor = red + "," + green + "," + blue;
-      sendMessagemBot(comando, valor);
-
-    }
+  if (index == "1") {
+    var comando = LEDLEFT;
+    var valor = red + "," + green + "," + blue;
+    sendMessagemBot(comando, valor);
+  } else if (index == "2") {
+    var comando = LEDRIGHT;
+    var valor = red + "," + green + "," + blue;
+    sendMessagemBot(comando, valor);
+  } else {
+    var comando = LEDBOTH;
+    var valor = red + "," + green + "," + blue;
+    sendMessagemBot(comando, valor);
   }
-}
+};
 
 SpriteMorph.prototype.mBotBuzzer = function(tone, beat) {
   //console.log('min: '+min)
-  if (min < 125)
-    min = 125;
-  else
-    min = eval(beat) * 1000;
+  if (min < 125) min = 125;
+  else min = eval(beat) * 1000;
 
   var now = +new Date();
-  if (now - lastmsg > min) { // 500ms
+  if (now - lastmsg > min) {
+    // 500ms
     lastmsg = now;
 
     var comando = PLAYNOTE;
-    var valor = tone + ',' + beat;
+    var valor = tone + "," + beat;
     sendMessagemBot(comando, valor);
-
   } else {
-    console.log('too fast');
+    console.log("too fast");
   }
-}
+};
 
 
 SpriteMorph.prototype.ArduinoReportConnected = function () {
@@ -933,8 +917,8 @@ SpriteMorph.prototype.ArduinoDigital_write = function (pin, value) {
     wait_open_arduino.push(callbackEntry);
   } else {
     pin = parseInt(pin, 10);
-    if (pin_modes_arduino[pin] !== DIGITAL_OUTPUT) {
-      pin_modes_arduino[pin] = DIGITAL_OUTPUT;
+    if (pin_modes_arduino[pin] !== DIGITAL_OUTPUT_arduino) {
+      pin_modes_arduino[pin] = DIGITAL_OUTPUT_arduino;
       msg = {
         command: "set_mode_digital_output",
         pin: pin,
@@ -978,8 +962,8 @@ SpriteMorph.prototype.ArduinoPMW_write = function (pin, value) {
   } else {
     pin = parseInt(pin, 10);
     // maximum value for Arduino
-    if (pin_modes_arduino[pin] !== PWM) {
-      pin_modes_arduino[pin] = PWM;
+    if (pin_modes_arduino[pin] !== PWM_arduino) {
+      pin_modes_arduino[pin] = PWM_arduino;
       msg = {
         command: "set_mode_pwm",
         pin: pin,
@@ -1034,8 +1018,8 @@ SpriteMorph.prototype.ArduinoTone_on = function (pin, freq, duration) {
       duration = 5000;
     }
 
-    if (pin_modes_arduino[pin] !== TONE) {
-      pin_modes_arduino[pin] = TONE;
+    if (pin_modes_arduino[pin] !== TONE_arduino) {
+      pin_modes_arduino[pin] = TONE_arduino;
       msg = {
         command: "set_mode_tone",
         pin: pin,
@@ -1072,8 +1056,8 @@ SpriteMorph.prototype.ArduinoServo = function (pin, angle) {
     if (angle > 200) angle = 200;
     else if (angle < 0) angle = 0;
 
-    if (pin_modes_arduino[pin] !== SERVO) {
-      pin_modes_arduino[pin] = SERVO;
+    if (pin_modes_arduino[pin] !== SERVO_arduino) {
+      pin_modes_arduino[pin] = SERVO_arduino;
       msg = {
         command: "set_mode_servo",
         pin: pin,
@@ -1105,8 +1089,8 @@ SpriteMorph.prototype.ArduinoAnalog_Read = function (pin) {
     wait_open_arduino.push(callbackEntry);
   } else {
     pin = parseInt(pin.split("")[1], 10);
-    if (pin_modes_arduino[pin] !== ANALOG_INPUT) {
-      pin_modes_arduino[pin] = ANALOG_INPUT;
+    if (pin_modes_arduino[pin] !== ANALOG_INPUT_arduino) {
+      pin_modes_arduino[pin] = ANALOG_INPUT_arduino;
       msg = {
         command: "set_mode_analog_input",
         pin: pin,
@@ -1132,8 +1116,8 @@ SpriteMorph.prototype.ArduinoDigital_Read = function (pin) {
     wait_open_arduino.push(callbackEntry);
   } else {
     pin = parseInt(pin, 10);
-    if (pin_modes_arduino[pin] !== DIGITAL_INPUT) {
-      pin_modes_arduino[pin] = DIGITAL_INPUT;
+    if (pin_modes_arduino[pin] !== DIGITAL_INPUT_arduino) {
+      pin_modes_arduino[pin] = DIGITAL_INPUT_arduino;
       msg = {
         command: "set_mode_digital_input",
         pin: pin,
@@ -1161,14 +1145,13 @@ SpriteMorph.prototype.ArduinoSonar_read = function (trigger_pin, echo_pin) {
     ];
     wait_open_arduino.push(callbackEntry);
   } else {
-    pin = parseInt(pin, 10);
     trigger_pin = parseInt(trigger_pin, 10);
     sonar_report_pin_arduino = trigger_pin;
 
     echo_pin = parseInt(echo_pin, 10);
 
-    if (pin_modes_arduino[trigger_pin] !== SONAR) {
-      pin_modes_arduino[trigger_pin] = SONAR;
+    if (pin_modes_arduino[trigger_pin] !== SONAR_arduino) {
+      pin_modes_arduino[trigger_pin] = SONAR_arduino;
       msg = {
         command: "set_mode_sonar",
         trigger_pin: trigger_pin,
@@ -1259,8 +1242,8 @@ SpriteMorph.prototype.RpiDigital_write = function (pin, value) {
   } else {
     pin = parseInt(pin, 10);
 
-    if (pin_modes_rpi[pin] !== DIGITAL_OUTPUT) {
-      pin_modes_rpi[pin] = DIGITAL_OUTPUT;
+    if (pin_modes_rpi[pin] !== DIGITAL_OUTPUT_rpi) {
+      pin_modes_rpi[pin] = DIGITAL_OUTPUT_rpi;
       msg = {
         command: "set_mode_digital_output",
         pin: pin,
@@ -1303,8 +1286,8 @@ SpriteMorph.prototype.RpiPMW_write = function (pin, value) {
   } else {
     pin = parseInt(pin, 10);
 
-    if (pin_modes_rpi[pin] !== PWM) {
-      pin_modes_rpi[pin] = PWM;
+    if (pin_modes_rpi[pin] !== PWM_rpi) {
+      pin_modes_rpi[pin] = PWM_rpi;
       msg = {
         command: "set_mode_pwm",
         pin: pin,
@@ -1355,8 +1338,8 @@ SpriteMorph.prototype.RpiTone_on = function (pin, freq, duration) {
   } else {
     pin = parseInt(pin, 10);
 
-    if (pin_modes_rpi[pin] !== TONE) {
-      pin_modes_rpi[pin] = TONE;
+    if (pin_modes_rpi[pin] !== TONE_rpi) {
+      pin_modes_rpi[pin] = TONE_rpi;
       msg = {
         command: "set_mode_tone",
         pin: pin,
@@ -1397,8 +1380,8 @@ SpriteMorph.prototype.RpiServo = function (pin, angle) {
   } else {
     pin = parseInt(pin, 10);
 
-    if (pin_modes_rpi[pin] !== SERVO) {
-      pin_modes_rpi[pin] = SERVO;
+    if (pin_modes_rpi[pin] !== SERVO_rpi) {
+      pin_modes_rpi[pin] = SERVO_rpi;
       msg = {
         command: "set_mode_servo",
         pin: pin,
@@ -1436,8 +1419,8 @@ SpriteMorph.prototype.RpiDigital_Read = function (pin) {
   } else {
     pin = parseInt(pin, 10);
 
-    if (pin_modes_rpi[pin] !== DIGITAL_INPUT) {
-      pin_modes_rpi[pin] = DIGITAL_INPUT;
+    if (pin_modes_rpi[pin] !== DIGITAL_INPUT_rpi) {
+      pin_modes_rpi[pin] = DIGITAL_INPUT_rpi;
       msg = {
         command: "set_mode_digital_input",
         pin: pin,
@@ -1446,7 +1429,7 @@ SpriteMorph.prototype.RpiDigital_Read = function (pin) {
       clientRaspberryPi.send(msg);
     }
 
-    return digital_inputs[pin];
+    return digital_inputs_rpi[pin];
   }
 };
 
@@ -1466,8 +1449,8 @@ SpriteMorph.prototype.RpiSonar_read = function (trigger_pin, echo_pin) {
 
     echo_pin = parseInt(echo_pin, 10);
 
-    if (pin_modes_rpi[trigger_pin] !== SONAR) {
-      pin_modes_rpi[trigger_pin] = SONAR;
+    if (pin_modes_rpi[trigger_pin] !== SONAR_rpi) {
+      pin_modes_rpi[trigger_pin] = SONAR_rpi;
       msg = {
         command: "set_mode_sonar",
         trigger_pin: trigger_pin,
@@ -1477,7 +1460,7 @@ SpriteMorph.prototype.RpiSonar_read = function (trigger_pin, echo_pin) {
       clientRaspberryPi.send(msg);
     }
 
-    return digital_inputs[sonar_report_pin_rpi];
+    return digital_inputs_rpi[sonar_report_pin_rpi];
   }
 };
 
