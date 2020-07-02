@@ -212,34 +212,29 @@ SnapDriver.prototype._defer = function() {
     };
 };
 
-// fn: synchronous function returning a boolean
-SnapDriver.prototype.waitUntil = function(fn, maxWait) {
-    const deferred = this._defer();
-
-    var startTime = Date.now();
-    var check = function() {
-        let result = fn();
-        if (result || Date.now()-startTime > maxWait) {
-            if (result) {
-                deferred.resolve(result);
-            } else {
-                deferred.reject(result || '');
-            }
-        } else {
-            setTimeout(check, 25);
-        }
-    };
+SnapDriver.prototype.waitUntil = async function(fn, maxWait) {
+    const startTime = Date.now();
     maxWait = maxWait || 6000;
-    check();
+    const timeExceeded = () => Date.now()-startTime > maxWait;
+    let result = await fn();
 
-    return deferred.promise;
+    while (!result) {
+        if (timeExceeded()) {
+            throw new Error('Timeout Exceeded');
+        }
+        await this.sleep(25);
+        result = await fn();
+    }
+    return result;
 };
 
-SnapDriver.prototype.expect = function(fn, msg, opts={}) {
-    return this.waitUntil(fn, opts.maxWait)
-        .catch(e => {
-            throw new Error(msg, e);
-        });
+SnapDriver.prototype.expect = async function(fn, msg, opts={}) {
+    try {
+        return await this.waitUntil(fn, opts.maxWait);
+    } catch (err) {
+        const error = err.message === 'Timeout Exceeded' ? new Error(msg) : err;
+        throw error;
+    }
 };
 
 // netsblox additions
@@ -398,7 +393,6 @@ SnapDriver.prototype.saveProjectAs = function(name, waitForSave=true) {
             const saveBtn = dialog.buttons.children[0];
             this.click(saveBtn);
             if (waitForSave) {
-                // TODO
                 return this.expect(
                     () => this.isShowingSavedMsg(),
                     `Did not see save message after "Save"`
@@ -427,7 +421,7 @@ SnapDriver.prototype.waitUntilProjectsLoaded = async function() {
     const isUpdateTitle = title => title.includes('Updating\nproject');
     const isShowingUpdateMsg = () => this.isShowingDialogTitle(isUpdateTitle);
 
-    if (dialog && dialog.source.includes('cloud')) {
+    if (dialog && dialog.source.id.includes('cloud')) {
         const oldProjectList = dialog.projectList;
         await this.expect(
             () => {
@@ -498,4 +492,13 @@ SnapDriver.prototype.disconnect = function() {
 SnapDriver.prototype.connect = function() {
     delete this.ide().sockets.onClose;
     this.ide().sockets.onClose();
+};
+
+SnapDriver.prototype.actionsSettled = async function() {
+    const {SnapActions} = this.globals();
+    const pendingActions = SnapActions._attemptedLocalActions
+        .concat(SnapActions._pendingLocalActions)
+        .map(action => action.promise);
+
+    await Promise.allSettled(pendingActions);
 };

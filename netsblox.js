@@ -687,31 +687,6 @@ NetsBloxMorph.prototype.openProject = function (name) {
     }
 };
 
-NetsBloxMorph.prototype.save = function () {
-    if (this.isPreviousVersion()) {
-        return this.showMessage('Please exit replay mode before saving');
-    }
-
-    if (this.source === 'examples') {
-        this.source = 'local'; // cannot save to examples
-    }
-    // NetsBlox changes - start
-    if (this.room.name) {
-    // NetsBlox changes - end
-        if (this.source === 'local') { // as well as 'examples'
-            // NetsBlox changes - start
-            this.saveProject(this.room.name);
-            // NetsBlox changes - end
-        } else { // 'cloud'
-            // NetsBlox changes - start
-            this.saveProjectToCloud(this.room.name);
-            // NetsBlox changes - end
-        }
-    } else {
-        this.saveProjectsBrowser();
-    }
-};
-
 NetsBloxMorph.prototype.saveACopy = function () {
     var myself = this;
     if (this.isPreviousVersion()) {
@@ -932,13 +907,12 @@ NetsBloxMorph.prototype.initializeCloud = function () {
 NetsBloxMorph.prototype.rawLoadCloudProject = function (project, isPublic) {
     var myself = this,
         newRoom = project.RoomName,
-        isNewRole = project.NewRole === 'true',
         roleName = project.ProjectName,
         projectId = project.ProjectID;  // src proj name
 
     this.source = 'cloud';
     project.Owner = project.Owner || SnapCloud.username;
-    this.updateUrlQueryString(newRoom, isPublic === 'true');
+    this.updateUrlQueryString(newRoom, isPublic);
 
     var msg = this.showMessage('Opening project...');
     return SnapActions.openProject(project.SourceCode)

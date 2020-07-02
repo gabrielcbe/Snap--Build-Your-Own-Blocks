@@ -1,143 +1,7 @@
-/* globals ProjectDialogMorph, ensureFullUrl, localize, nop,
-   IDE_Morph, Process, SnapCloud, BlockExportDialogMorph, DialogBoxMorph,
-   detect, Point
+/* globals ensureFullUrl, localize, nop, Point, IDE_Morph, Process, SnapCloud,
+   SaveOpenDialogMorph, SaveOpenDialogMorphSource, Morph, utils, MenuMorph,
+   SERVER_URL, SnapActions
    */
-
-ProjectDialogMorph.prototype._deleteProject =
-    ProjectDialogMorph.prototype.deleteProject;
-
-ProjectDialogMorph.prototype.deleteProject = function () {
-    if (this.source === 'cloud-shared') {
-        // Remove self from list of collabs
-        var name = this.listField.selected.ProjectName;
-        this.ide.confirm(
-            localize(
-                'Are you sure you want to delete'
-            ) + '\n"' + name + '"?',
-            'Delete Project',
-            function() {
-                SnapCloud.evictCollaborator(SnapCloud.username);
-            }
-        );
-    } else {
-        this._deleteProject();
-    }
-};
-
-// adapted from installCloudProjectList
-ProjectDialogMorph.prototype._openProject = ProjectDialogMorph.prototype.openProject;
-ProjectDialogMorph.prototype.openProject = function () {
-    var myself = this,
-        proj = this.listField.selected,
-        response;
-
-    if (this.source === 'examples') {
-        this.destroy();
-        response = this.ide.getURL(this.ide.resourceURL('Examples', proj.name));
-        this.ide.droppedText(response);
-        // role name
-        this.ide.updateUrlQueryString(proj.name, false, true);
-    } else if (this.source === 'cloud-shared'){
-        this.destroy();
-        this.ide.showMessage('Opening project.. ', 2);
-        SnapCloud.joinActiveProject(
-            proj.ID,
-            function(xml) {
-                myself.ide.rawLoadCloudProject(xml, proj.Public);
-            },
-            myself.ide.cloudError()
-        );
-    } else {
-        return this._openProject();
-    }
-};
-
-ProjectDialogMorph.prototype.openCloudProject = function (project) {
-    var myself = this,
-        msg;
-
-    this.destroy();
-    myself.ide.nextSteps([
-        function () {
-            msg = myself.ide.showMessage('Fetching project\nfrom the cloud...');
-        },
-        function () {
-            SnapCloud.reconnect(function() {
-                var isReopen = project.ProjectName === myself.ide.room.name,
-                    onlyMe = myself.ide.room.getCurrentOccupants() === 1;
-
-                if (isReopen && onlyMe) {  // reopening own project
-                    myself.rawOpenCloudProject(project);
-                } else {
-                    SnapCloud.isProjectActive(
-                        project.ID,
-                        function(isActive) {
-                            var choices,
-                                dialog;
-
-                            if (isActive) {
-                                // Prompt if we should join the project or open new
-                                dialog = new DialogBoxMorph(null, nop);
-                                choices = {};
-                                choices['Join Existing'] = function() {
-                                    SnapCloud.joinActiveProject(
-                                        project.ID,
-                                        function(xml) {
-                                            myself.ide.rawLoadCloudProject(xml, project.Public);
-                                        },
-                                        myself.ide.cloudError()
-                                    );
-                                    dialog.destroy();
-                                    myself.destroy();
-                                };
-                                choices['Create Copy'] = function() {
-                                    dialog.destroy();
-                                    return SnapCloud.getEntireProject(
-                                        project.ID,
-                                        function(xml) {
-                                            return myself.ide.droppedText(xml);
-                                        },
-                                        myself.ide.cloudError()
-                                    );
-                                };
-                                dialog.ask(
-                                    localize('Join Existing Project'),
-                                    localize('This project is already open. Would you like to join\n' +
-                                        'the active one or create a new copy?'),
-                                    myself.world(),
-                                    choices
-                                );
-                            } else {
-                                myself.rawOpenCloudProject(project);
-                            }
-                        },
-                        myself.ide.cloudError()
-                    );
-                }
-            }, myself.ide.cloudError());
-
-        },
-        function() {
-            msg.destroy();
-        }
-    ]);
-};
-
-// TODO: Why is this one so much different?
-ProjectDialogMorph.prototype.rawOpenCloudProject = function (proj) {
-    var myself = this,
-        msg = myself.ide.showMessage('Fetching project\nfrom the cloud...');
-
-    SnapCloud.getProject(
-        proj.ID,
-        function (xml) {
-            msg.destroy();
-            myself.ide.rawLoadCloudProject(xml, proj.Public);
-        },
-        myself.ide.cloudError()
-    );
-    this.destroy();
-};
 
 ////////////////////////////////////////////////////
 // Override submodule for exporting of message types
@@ -544,14 +408,14 @@ IDE_Morph.prototype.initializeEmbeddedAPI = function () {
         {
             const {id} = data;
             const xml = await self.getProjectXML();
-            window.parent.postMessage({id, xml});
+            event.source.postMessage({id, xml}, event.origin);
             break;
         }
         case 'get-username':
         {
             const {id} = data;
             const {username} = SnapCloud;
-            window.parent.postMessage({id, username});
+            event.source.postMessage({id, username}, event.origin);
             break;
         }
         }
@@ -590,3 +454,452 @@ IDE_Morph.prototype.getMediaListFromURL = function (url, callback) {
     }
 };
 
+// LibraryDialogSources ///////////////////////////////////////////
+
+LibraryDialogSource.prototype = Object.create(SaveOpenDialogMorphSource.prototype);
+LibraryDialogSource.prototype.constructor = LibraryDialogSource;
+LibraryDialogSource.uber = SaveOpenDialogMorphSource.prototype;
+
+function LibraryDialogSource() {
+}
+
+LibraryDialogSource.prototype.init = function(ide, name, icon, id) {
+    this.ide = ide;
+    LibraryDialogSource.uber.init.call(this, name, icon, id);
+};
+
+LibraryDialogSource.prototype.open = async function(library) {
+    this.ide.droppedText(await this.getContent(library));
+};
+
+LibraryDialogSource.prototype.cacheKey = function(item) {
+    return [
+        this.id,
+        item.name,
+    ].join('/');
+};
+
+OfficialLibrarySource.prototype = Object.create(LibraryDialogSource.prototype);
+OfficialLibrarySource.prototype.constructor = OfficialLibrarySource;
+OfficialLibrarySource.uber = LibraryDialogSource.prototype;
+
+function OfficialLibrarySource(ide) {
+    this.init(ide, 'Official', 'netsbloxLogo', 'official');
+}
+
+OfficialLibrarySource.prototype.list = function() {
+    const deferred = utils.defer();
+    this.ide.getURL(
+        this.ide.resourceURL('libraries', 'LIBRARIES'),
+        txt => {
+            const libraries = this.ide.parseResourceFile(txt).map(lib => {
+                lib.notes = lib.description;
+                return lib;
+            });
+            deferred.resolve(libraries);
+        }
+    );
+    return deferred.promise;
+};
+
+OfficialLibrarySource.prototype.getContent = async function(item) {
+    const deferred = utils.defer();
+    this.ide.getURL(
+        this.ide.resourceURL('libraries', item.fileName),
+        function(libraryXML) {
+            deferred.resolve(libraryXML);
+        }
+    );
+    return deferred.promise;
+};
+
+CloudLibrarySource.prototype = Object.create(LibraryDialogSource.prototype);
+CloudLibrarySource.prototype.constructor = CloudLibrarySource;
+CloudLibrarySource.uber = LibraryDialogSource.prototype;
+
+function CloudLibrarySource(ide) {
+    this.init(ide, 'Cloud', 'cloud', 'cloud');
+}
+
+CloudLibrarySource.prototype.list = function() {
+    const isLoggedIn = !!SnapCloud.username;
+    if (!isLoggedIn) {
+        this.ide.showMessage(localize('You are not logged in'));
+    }
+
+    const deferred = utils.defer();
+    const url = `${SERVER_URL}/api/v2/libraries/user/`;
+    this.ide.getURL(
+        url,
+        libJSON => {
+            const libraries = JSON.parse(libJSON).map(lib => {
+                lib.public = lib.public || lib.needsApproval;
+                return lib;
+            });
+            deferred.resolve(libraries);
+        }
+    );
+    return deferred.promise;
+};
+
+CloudLibrarySource.prototype.save = async function(item) {
+    const {name, blocks, notes} = item;
+    const request = new XMLHttpRequest();
+    const username = SnapCloud.username;
+    request.open('POST', `${SERVER_URL}/api/v2/libraries/user/${username}/${name}`, true);
+    request.withCredentials = true;
+
+    await utils.requestPromise(request, {blocks, notes});
+    const {needsApproval} = JSON.parse(request.responseText);
+    if (needsApproval) {
+        this.ide.inform(
+            'Approval Required',
+            'Approval is required to re-publish the given library.\n\n' +
+            'It will be publicly available again\nfollowing a successful approval!',
+        );
+    }
+};
+
+CloudLibrarySource.prototype.getContent = async function(item) {
+    const deferred = utils.defer();
+    const {owner, name} = item;
+    const url = `${SERVER_URL}/api/v2/libraries/user/${owner}/${name}`;
+    this.ide.getURL(
+        url,
+        libXML => {
+            deferred.resolve(libXML);
+        }
+    );
+    return deferred.promise;
+};
+
+CloudLibrarySource.prototype.delete = async function(item) {
+    const {name} = item;
+    const request = new XMLHttpRequest();
+    const username = SnapCloud.username;
+    request.open('DELETE', `${SERVER_URL}/api/v2/libraries/user/${username}/${name}`, true);
+    request.withCredentials = true;
+
+    await utils.requestPromise(request);
+};
+
+CloudLibrarySource.prototype.publish = async function(item, unpublish) {
+    const action = unpublish ? 'unpublish' : 'publish';
+    const username = SnapCloud.username;
+    const {name} = item;
+    const url = `${SERVER_URL}/api/v2/libraries/user/${username}/${name}/${action}`;
+    const request = new XMLHttpRequest();
+    request.open('POST', url, true);
+    request.withCredentials = true;
+
+    await utils.requestPromise(request);
+    if (!unpublish) {
+        const {needsApproval} = JSON.parse(request.responseText);
+        if (needsApproval) {
+            this.ide.inform(
+                'Approval Required',
+                'Approval is required to publish the given library.\n\n' +
+                'It will be publicly available automatically\nfollowing a successful approval!',
+            );
+        }
+    }
+};
+
+CommunityLibrarySource.prototype = Object.create(LibraryDialogSource.prototype);
+CommunityLibrarySource.prototype.constructor = CommunityLibrarySource;
+CommunityLibrarySource.uber = LibraryDialogSource.prototype;
+
+function CommunityLibrarySource(ide) {
+    this.init(ide, 'Community', 'cloud', 'community');
+}
+
+CommunityLibrarySource.prototype.list = function() {
+    const deferred = utils.defer();
+    const url = `${SERVER_URL}/api/v2/libraries/community/`;
+    this.ide.getURL(
+        url,
+        libJSON => {
+            const libraries = JSON.parse(libJSON);
+            libraries.forEach(lib => {
+                lib.libraryName = lib.name;
+                lib.name = `${lib.name} (author: ${lib.owner})`;
+            });
+
+            deferred.resolve(libraries);
+        }
+    );
+    return deferred.promise;
+};
+
+CommunityLibrarySource.prototype.getContent = function(item) {
+    const {owner} = item;
+    const name = item.libraryName;
+    return CloudLibrarySource.prototype.getContent.call(this, {name, owner});
+};
+
+// LibraryDialogMorph ///////////////////////////////////////////
+
+LibraryDialogMorph.prototype = new SaveOpenDialogMorph();
+LibraryDialogMorph.prototype.constructor = LibraryDialogMorph;
+LibraryDialogMorph.uber = SaveOpenDialogMorph.prototype;
+
+// LibraryDialogMorph instance creation:
+
+function LibraryDialogMorph(ide, name, xml, notes) {
+    this.init(ide, name, xml, notes);
+}
+
+LibraryDialogMorph.prototype.init = function (ide, name, xml, notes) {
+    const sources = [
+        new OfficialLibrarySource(ide),
+        new CloudLibrarySource(ide),
+        new CommunityLibrarySource(ide),
+    ];
+    const task = xml ? 'save' : 'open';
+    // initialize inherited properties:
+    this.ide = ide;
+    this.libraryXML = xml;
+    // I contain a cached version of the libaries I have displayed,
+    // because users may choose to explore a library many times before
+    // importing.
+    this.libraryCache = {}; // {fileName: [blocks-array] }
+
+    LibraryDialogMorph.uber.init.call(
+        this,
+        task,
+        'Library',
+        sources,
+        null,
+        {name, notes}
+    );
+
+    if (task === 'open') {
+        this.labelString = 'Import Library';
+        this.createLabel();
+    }
+};
+
+LibraryDialogMorph.prototype.saveItem = async function(newItem) {
+    newItem.blocks = this.libraryXML;
+    await this.source.save(newItem);
+};
+
+LibraryDialogMorph.prototype.buildContents = function () {
+    LibraryDialogMorph.uber.buildContents.apply(this, arguments);
+    if (this.task === 'open') {
+        const openButton = this.buttons.children.find(btn => btn.action === 'openItem');
+        openButton.labelString = '  ' + localize('Import') + '  ';
+        openButton.drawNew();
+        openButton.fixLayout();
+    } else {
+        const cacheKey = 'current-library';
+        this.cacheLibrary(
+            cacheKey,
+            this.ide.serializer.loadBlocks(this.libraryXML)
+        );
+        this.displayBlocks(cacheKey);
+        this.fixLayout();
+    }
+};
+
+LibraryDialogMorph.prototype.setPreview = async function (item) {
+    const cacheKey = this.source.cacheKey(item);
+    if (this.hasCached(cacheKey)) {
+        this.displayBlocks(cacheKey);
+    } else {
+        this.showMessage(
+            localize('Loading') + '\n' + localize(item.name)
+        );
+        const libraryXML = await this.source.getContent(item);
+        this.cacheLibrary(
+            cacheKey,
+            this.ide.serializer.loadBlocks(libraryXML)
+        );
+        this.displayBlocks(cacheKey);
+    }
+    this.notesText.text = item.notes || '';
+    this.notesText.drawNew();
+};
+
+LibraryDialogMorph.prototype.initPreview = function () {
+    this.initializePalette();
+    this.preview = this.palette;
+};
+
+LibraryDialogMorph.prototype.initializePalette = function () {
+    // I will display a scrolling list of blocks.
+    if (this.palette) {this.palette.destroy(); }
+
+    this.palette = new ScrollFrameMorph(
+        null,
+        null,
+        SpriteMorph.prototype.sliderColor
+    );
+    this.palette.color = SpriteMorph.prototype.paletteColor;
+    this.palette.padding = 4;
+    this.palette.isDraggable = false;
+    this.palette.acceptsDrops = false;
+    this.palette.contents.acceptsDrops = false;
+
+    this.body.add(this.palette);
+};
+
+LibraryDialogMorph.prototype.initializeLibraryDescription = function () {
+    if (this.notesField) {this.notesField.destroy(); }
+
+    this.notesField = new ScrollFrameMorph();
+    this.notesField.fixLayout = nop;
+
+    this.notesField.edge = InputFieldMorph.prototype.edge;
+    this.notesField.fontSize = InputFieldMorph.prototype.fontSize;
+    this.notesField.typeInPadding = InputFieldMorph.prototype.typeInPadding;
+    this.notesField.contrast = InputFieldMorph.prototype.contrast;
+    this.notesField.drawNew = InputFieldMorph.prototype.drawNew;
+    this.notesField.drawRectBorder = InputFieldMorph.prototype.drawRectBorder;
+
+    this.notesField.acceptsDrops = false;
+    this.notesField.contents.acceptsDrops = false;
+
+    this.notesText = new TextMorph('');
+
+    this.notesField.isTextLineWrapping = true;
+    this.notesField.padding = 3;
+    this.notesField.setContents(this.notesText);
+    this.notesField.setHeight(100);
+
+    this.body.add(this.notesField);
+};
+
+LibraryDialogMorph.prototype.fixLayout = function () {
+    var th = fontHeight(this.titleFontSize) + this.titlePadding * 2,
+        thin = this.padding / 2,
+        inputField = this.nameField || this.filterField,
+        oldFlag = Morph.prototype.trackChanges;
+
+    Morph.prototype.trackChanges = false;
+
+    if (this.buttons && (this.buttons.children.length > 0)) {
+        this.buttons.fixLayout();
+    }
+
+    if (this.body) {
+        this.body.setPosition(this.position().add(new Point(
+            this.padding,
+            th + this.padding
+        )));
+        this.body.setExtent(new Point(
+            this.width() - this.padding * 2,
+            this.height() - this.padding * 3 - th - this.buttons.height()
+        ));
+        this.srcBar.setPosition(this.body.position());
+
+        inputField.setWidth(
+            this.body.width() - this.srcBar.width() - this.padding * 6
+        );
+        inputField.setLeft(this.srcBar.right() + this.padding * 3);
+        inputField.setTop(this.srcBar.top());
+        inputField.drawNew();
+
+        this.listField.setLeft(this.srcBar.right() + this.padding);
+        this.listField.setWidth(200);
+        this.listField.contents.children[0].adjustWidths();
+
+        this.listField.setTop(inputField.bottom() + this.padding);
+        this.listField.setHeight(
+            this.body.height() - inputField.height() - this.padding
+        );
+
+        if (this.magnifiyingGlass) {
+            this.magnifiyingGlass.setTop(inputField.top());
+            this.magnifiyingGlass.setLeft(this.listField.left());
+        }
+
+        this.notesField.setExtent(new Point(
+            this.body.right() - this.listField.right() - thin,
+            100,
+        ));
+
+        this.palette.setRight(this.body.right());
+        this.palette.setTop(inputField.bottom() + this.padding);
+        this.palette.setExtent(new Point(
+            this.notesField.width(),
+            this.listField.height() - this.notesField.height() - thin
+        ));
+        
+        this.notesField.setPosition(this.palette.bottomLeft().add(
+            new Point(0, thin)
+        ));
+
+        this.notesField.setTop(this.palette.bottom() + thin);
+        this.notesField.setLeft(this.palette.left());
+    }
+
+    if (this.label) {
+        this.label.setCenter(this.center());
+        this.label.setTop(this.top() + (th - this.label.height()) / 2);
+    }
+
+    if (this.buttons && (this.buttons.children.length > 0)) {
+        this.buttons.setCenter(this.center());
+        this.buttons.setBottom(this.bottom() - this.padding);
+    }
+
+    Morph.prototype.trackChanges = oldFlag;
+    this.changed();
+};
+    
+// Library Cache Utilities.
+LibraryDialogMorph.prototype.hasCached = function (key) {
+    return this.libraryCache.hasOwnProperty(key);
+};
+
+LibraryDialogMorph.prototype.cacheLibrary = function (key, blocks) {
+    this.libraryCache[key] = blocks ;
+};
+
+LibraryDialogMorph.prototype.cachedLibrary = function (key) {
+    return this.libraryCache[key];
+};
+
+LibraryDialogMorph.prototype.displayBlocks = function (libraryKey) {
+    var x, y, blockImage, previousCategory, blockContainer,
+        myself = this,
+        padding = 4,
+        blocksList = this.cachedLibrary(libraryKey);
+
+    if (!blocksList.length) {return; }
+    // populate palette, grouped by categories.
+    this.initializePalette();
+    x = this.palette.left() + padding;
+    y = this.palette.top();
+
+    SpriteMorph.prototype.categories.forEach(function (category) {
+        blocksList.forEach(function (definition) {
+            if (definition.category !== category) {return; }
+            if (category !== previousCategory) {
+                y += padding;
+            }
+            previousCategory = category;
+
+            blockImage = definition.templateInstance().fullImage();
+            blockContainer = new Morph();
+            blockContainer.setExtent(
+                new Point(blockImage.width, blockImage.height)
+            );
+            blockContainer.image = blockImage;
+            blockContainer.setPosition(new Point(x, y));
+            myself.palette.addContents(blockContainer);
+
+            y += blockContainer.fullBounds().height() + padding;
+        });
+    });
+
+    this.palette.scrollX(padding);
+    this.palette.scrollY(padding);
+    this.fixLayout();
+};
+
+LibraryDialogMorph.prototype.showMessage = function (msgText) {
+    var msg = new MenuMorph(null, msgText);
+    msg.popUpCenteredInWorld(this.palette.contents);
+};

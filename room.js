@@ -833,7 +833,8 @@ RoomMorph.prototype._invitationResponse = function (id, response, role) {
             } else {  // Empty the project
                 myself.ide.newRole(role);
             }
-            myself.ide.showMessage('you have joined the room!', 2);
+            myself.ide.showMessage(localize('Opening ') + role +
+                localize(' at ') + project.ProjectName, 2);
             myself.ide.silentSetProjectName(role);
             SnapCloud.disconnect();
         },
@@ -1843,6 +1844,9 @@ RoomEditorMorph.prototype.addToggleReplay = function() {
     var recordButton = new PushButtonMorph(
         this,
         function() {
+            if (this.isReplayMode()) {
+                myself.exitReplayMode();
+            }
             myself.toggleRecordMode();
             myself.updateControlButtons();
         },
