@@ -26,30 +26,30 @@ SpriteIconMorph.prototype.userMenu = function() {
 
 IDE_Morph.prototype.originalSetLanguage = IDE_Morph.prototype.setLanguage;
 IDE_Morph.prototype.setLanguage = function(lang, callback) {
-  var myself = this;
+    var myself = this;
 
-  myself.originalSetLanguage(lang, function() {
-    myself.setLanguageMM(lang, callback);
-  });
+    myself.originalSetLanguage(lang, function() {
+        myself.setLanguageMM(lang, callback);
+    });
 };
 
 IDE_Morph.prototype.setLanguageMM = function(lang, callback) {
 
-  var mmTranslation = document.getElementById('mm-language'),
-    mmSrc = 'mm/lang-' + lang + '.js',
-    myself = this;
-  if (mmTranslation) {
-    document.head.removeChild(mmTranslation);
-  }
-  if (lang === 'en') {
-    return this.reflectLanguage('en', callback);
-  }
-  mmTranslation = document.createElement('script');
-  mmTranslation.id = 'mm-language';
-  mmTranslation.onload = function() {
-    myself.reflectLanguage(lang, callback);
-  };
-  document.head.appendChild(mmTranslation);
-  mmTranslation.src = mmSrc;
+    var mmTranslation = document.getElementById('mm-language'),
+        mmSrc = 'mm/lang-' + lang + '.js',
+        myself = this;
+    if (mmTranslation) {
+        document.head.removeChild(mmTranslation);
+    }
+    if (lang === 'en') {
+        return this.reflectLanguage('en', callback);
+    }
+    mmTranslation = document.createElement('script');
+    mmTranslation.id = 'mm-language';
+    mmTranslation.onload = function() {
+        myself.reflectLanguage(lang, callback);
+    };
+    document.head.appendChild(mmTranslation);
+    mmTranslation.src = mmSrc;
 
 };

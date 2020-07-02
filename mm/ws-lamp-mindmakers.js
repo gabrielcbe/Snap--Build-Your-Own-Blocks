@@ -105,7 +105,8 @@ function statusConnectionLampBLE(urlConexaoLampBLEArg) {
                 }, 1000);
             } else if (message.data.indexOf('COMANDO_FINAL') > -1) {
                 // Indica finais de execução
-                endReturn();
+                // endReturn();
+                console.log('mensagem final');
             } else {
                 //para implementar pegar valores do sensor
                 //console.log('messageELSE: '+JSON.stringify(message.data));

@@ -1,4 +1,4 @@
-mmTempDict = {
+var mmTempDict = {
 
     /* ============================================
 
@@ -9,9 +9,9 @@ mmTempDict = {
 
     ============================================
     */
-       //mbot:
+    //mbot:
 
-       //Frases spec: em mm/objects.js
+    //Frases spec: em mm/objects.js
 
     'ultrasonic sensor':
         '',
@@ -108,5 +108,5 @@ mmTempDict = {
 
 // Add attributes to original SnapTranslator.dict.LANG
 for (var attrname in mmTempDict) {
-  SnapTranslator.dict.LANG[attrname] = mmTempDict[attrname];
+    SnapTranslator.dict.LANG[attrname] = mmTempDict[attrname];
 }

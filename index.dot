@@ -66,6 +66,12 @@
         <script type="text/javascript" src="actions-ext.js"></script>
 
 
+        
+
+
+        {{ } else { }}
+        <script type="text/javascript" src="dist/app.min.js?v=1.18.0"></script>
+
         <!-- MindMakers blocks and scripts -->
         <!-- carregar ws serviços primeiro para poder utilizar nos blocos -->
         <script type="text/javascript" src="mm/ws-mbot-mindmakers.js"></script>
@@ -78,9 +84,6 @@
         <script type="text/javascript" src="mm/gui.js"></script>
         <script type="text/javascript" src="mm/objects.js"></script>
 
-
-        {{ } else { }}
-        <script type="text/javascript" src="dist/app.min.js?v=1.18.0"></script>
         {{ } }}
 
         <script type="text/javascript">
