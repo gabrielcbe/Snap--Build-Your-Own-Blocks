@@ -1,5 +1,4 @@
 // init decorator
-
 SpriteMorph.prototype.originalInit = SpriteMorph.prototype.init;
 SpriteMorph.prototype.init = function(globals) {
     this.originalInit(globals);
@@ -324,6 +323,13 @@ SpriteMorph.prototype.initMindMakersBlocks = function() {
         spec: 'set color mode to %RGBW with intensity %n',
         defaults: [['white'], 100],
     };
+
+    this.blocks.Monitoronoff = {
+        type: 'command',
+        category: 'SalaIoT',
+        spec: 'Turn monitor off for %n s',
+        defaults: [5],
+    };
 };
 
 SpriteMorph.prototype.initBlocks = function() {
@@ -438,6 +444,22 @@ SpriteMorph.prototype.blockTemplates = function(category) {
         'Disconnect LampBLE'
     );
 
+    // myself.SalaConnectButton = new PushButtonMorph(
+    //     null,
+    //     function() {
+    //         statusConnectionSALA();
+    //     },
+    //     'Connect Sala'
+    // );
+
+    // myself.SalaDisconnectButton = new PushButtonMorph(
+    //     null,
+    //     function() {
+    //         registraDesconexaoSALA();
+    //     },
+    //     'Disconnect Sala'
+    // );
+
     function blockBySelector(selector) {
         if (StageMorph.prototype.hiddenPrimitives[selector]) {
             return null;
@@ -548,6 +570,19 @@ SpriteMorph.prototype.blockTemplates = function(category) {
         blocks.push('-');
         blocks.push(blockBySelector('LampBLERGB'));
         blocks.push('-');
+
+        // blocks.push(myself.SalaConnectButton);
+        // blocks.push(myself.SalaDisconnectButton);
+        blocks.push('-');
+        blocks.push('-');
+        blocks.push('-');
+        blocks.push('-');
+        blocks.push(blockBySelector('Monitoronoff'));
+        blocks.push('-');
+
+        
+
+
     } else if (category === 'RaspberryPi') {
         blocks.push(myself.RaspberryPiConnectButton);
         blocks.push(myself.RaspberryPiDisconnectButton);
@@ -1517,4 +1552,84 @@ SpriteMorph.prototype.LampBLEAnyClr = function(clr) {
 
         sendMessageLampBLE(LAMPADA_RGB, valor);
     }
+};
+
+// SpriteMorph.prototype.Monitoronoff = function(onoff) {
+//     let comand = onoff[0] === 'on' ? 'monitoron' : 'monitoroff';
+SpriteMorph.prototype.Monitoronoff = async function (sec) {
+    sec = parseInt(sec, 10);
+    sec = sec ? sec : 3;
+    sec = sec < 3 ? sec = 3 : sec > 20 ? sec = 20 : sec;
+
+    var Http = new XMLHttpRequest();
+    Http.open('GET', 'http://localhost:800/id', true);
+    Http.send();
+
+    Http.addEventListener('readystatechange', function () {
+        if (this.readyState === this.DONE) {
+            let retorno = JSON.parse(Http.responseText);
+            // console.log('retorno; ' + JSON.stringify(retorno));
+            // console.log('retorno.estacao ', retorno.estacao);
+            // console.log('retorno.sala ', retorno.sala);
+
+            if (retorno && retorno.estacao && retorno.sala && SnapCloud.username && SnapCloud.password) {
+
+                let data = JSON.stringify({
+                    'login': SnapCloud.username,
+                    'senha': SnapCloud.password,
+                    'sala': retorno.sala,
+                    'estacao': retorno.estacao,
+                    'comando': 'monitoroff'
+                });
+
+                let xhr = new XMLHttpRequest();
+                xhr.withCredentials = null;
+
+                xhr.addEventListener('readystatechange', function () {
+                    if (this.readyState === this.DONE) {
+                        console.log('this.responseText aqui', this.responseText);
+
+                        setTimeout(() => {
+                            data = JSON.stringify({
+                                'login': SnapCloud.username,
+                                'senha': SnapCloud.password,
+                                'sala': retorno.sala,
+                                'estacao': retorno.estacao,
+                                'comando': 'monitoron'
+                            });
+
+                            var xhr2 = new XMLHttpRequest();
+                            xhr2.withCredentials = null;
+
+                            xhr2.addEventListener('readystatechange', function () {
+                                if (this.readyState === this.DONE) {
+                                    console.log('this.responseText aqui2', this.responseText);
+                                    return this.responseText;
+                                }
+                            });
+
+                            xhr2.open('POST', 'http://mind-makers.appspot.com/iot/sala/comandoMMSnap');
+                            xhr2.setRequestHeader('content-type', 'application/json');
+
+                            xhr2.send(data);
+
+                        }, sec * 1000);
+                    }
+                });
+
+                xhr.open('POST', 'http://mind-makers.appspot.com/iot/sala/comandoMMSnap');
+                xhr.setRequestHeader('content-type', 'application/json');
+
+                xhr.send(data);
+
+            } else {
+                console.log('Não tinha tudo que precisava');
+                console.log('SnapCloud.username', SnapCloud.username);
+                // console.log('SnapCloud.password',SnapCloud.password);
+                console.log('retorno.estacao ', retorno.estacao);
+                console.log('retorno.sala ', retorno.sala);
+            }
+        }
+    });
+
 };
