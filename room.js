@@ -789,15 +789,12 @@ RoomMorph.prototype.promptInvite = function (id, role, roomName, inviter) {
         msg;
 
     if (inviter === SnapCloud.username) {
-      // //MMSNAP
-      //   msg = 'Would you like to move to "' + roomName + '"?';
+        //MMSNAP
         msg = localize('Would you like to move to "') + roomName + '"?';
     } else {
-        // //MMSNAP
-        // msg = inviter + ' has invited you to join\nhim/her at "' + roomName +
-        //     '"\nAccept?';
+        //MMSNAP
         msg = inviter + localize(' has invited you to join\nhim/her at "') + roomName +
-        localize('"\nAccept?');
+            localize('"\nAccept?');
     }
 
     dialog.cancel = function() {
@@ -1440,9 +1437,7 @@ RoleMorph.prototype.setOccupants = function(users) {
     this.users = users;
     // Update the contents of the caption
     // //MMSNAP
-    // var userText = '<empty>';
     var userText = localize('<empty>');
-
     if (this.users.length) {
         userText = this.users.map(function(user){
             return user.username || localize('guest');

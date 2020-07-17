@@ -493,7 +493,6 @@ SnapSerializer.prototype.loadProjectModel = function (xmlNode, ide) {
         app = appInfo ? appInfo.split(' ')[0] : null,
         model;
     //MMSNAP
-    //if (ide && app && app !== this.app.split(' ')[0]) {
     if (ide && app && app !== this.app.split(' ')[0] && app !== 'NetsBlox') {
         ide.inform(
             app + ' Project',
@@ -2246,9 +2245,7 @@ VariableFrame.prototype.toPortableXML = function (serializer) {
 
     if (serializer.dependencies) {
         variableNames = variableNames
-            //MMSNAP
-            .filter( function (name) {serializer.dependencies.variables.includes(name)});
-            //.filter(name => serializer.dependencies.variables.includes(name));
+            .filter(name => serializer.dependencies.variables.includes(name));
     }
 
     return variableNames.reduce(function (vars, v) {
