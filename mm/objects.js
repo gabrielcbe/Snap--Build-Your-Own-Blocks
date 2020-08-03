@@ -340,7 +340,7 @@ SpriteMorph.prototype.initBlocks = function() {
 SpriteMorph.prototype.initBlocks();
 
 // blockTemplates decorator
-// let context = this;
+// const context = this;
 SpriteMorph.prototype.originalBlockTemplates =
   SpriteMorph.prototype.blockTemplates;
 SpriteMorph.prototype.blockTemplates = function(category) {
@@ -1556,14 +1556,32 @@ SpriteMorph.prototype.LampBLEAnyClr = function(clr) {
 
 // SpriteMorph.prototype.Monitoronoff = function(onoff) {
 //     let comand = onoff[0] === 'on' ? 'monitoron' : 'monitoroff';
-SpriteMorph.prototype.Monitoronoff = async function (sec) {
+SpriteMorph.prototype.Monitoronoff = function (sec) {
     sec = parseInt(sec, 10);
     sec = sec ? sec : 3;
     sec = sec < 3 ? sec = 3 : sec > 20 ? sec = 20 : sec;
 
+
+    console.log('vai esperar 5 segundos?3');
+    // var this.context = this;
+    // Process.prototype.doWait(50);
+
+    
+    // context.doWait(50);
+
+    // context.timeout(50);
+    // SpriteMorph.prototype.timeout(50);
+
+    // setTimeout(() => {
+    //     return 'mensagem';
+    // }, 50000);
+
+
+
     var Http = new XMLHttpRequest();
     Http.open('GET', 'http://localhost:800/id', true);
     Http.send();
+
 
     Http.addEventListener('readystatechange', function () {
         if (this.readyState === this.DONE) {
@@ -1604,7 +1622,7 @@ SpriteMorph.prototype.Monitoronoff = async function (sec) {
                             xhr2.addEventListener('readystatechange', function () {
                                 if (this.readyState === this.DONE) {
                                     console.log('this.responseText aqui2', this.responseText);
-                                    return this.responseText;
+                                    return setTimeout(this.responseText, sec * 1000);
                                 }
                             });
 
