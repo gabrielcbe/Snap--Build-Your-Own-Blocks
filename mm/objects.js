@@ -1621,12 +1621,13 @@ SpriteMorph.prototype.Monitoronoff = function (sec) {
 
                             xhr2.addEventListener('readystatechange', function () {
                                 if (this.readyState === this.DONE) {
+                                    console.log('Done - monitoron');
                                     console.log('this.responseText aqui2', this.responseText);
                                     return setTimeout(this.responseText, sec * 1000);
                                 }
                             });
 
-                            xhr2.open('POST', 'http://mind-makers.appspot.com/iot/sala/comandoMMSnap');
+                            xhr2.open('POST', 'http://mind-makers.appspot.com/iot/sala/comandoMMSnap', true);
                             xhr2.setRequestHeader('content-type', 'application/json');
 
                             xhr2.send(data);
@@ -1635,7 +1636,7 @@ SpriteMorph.prototype.Monitoronoff = function (sec) {
                     }
                 });
 
-                xhr.open('POST', 'http://mind-makers.appspot.com/iot/sala/comandoMMSnap');
+                xhr.open('POST', 'http://mind-makers.appspot.com/iot/sala/comandoMMSnap', true);
                 xhr.setRequestHeader('content-type', 'application/json');
 
                 xhr.send(data);
