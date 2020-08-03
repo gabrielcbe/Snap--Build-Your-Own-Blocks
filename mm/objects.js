@@ -1627,7 +1627,7 @@ SpriteMorph.prototype.Monitoronoff = function (sec) {
                                 }
                             });
 
-                            xhr2.open('POST', 'http://mind-makers.appspot.com/iot/sala/comandoMMSnap', true);
+                            xhr2.open('POST', 'https://mind-makers.appspot.com/iot/sala/comandoMMSnap', true);
                             xhr2.setRequestHeader('content-type', 'application/json');
 
                             xhr2.send(data);
@@ -1636,7 +1636,7 @@ SpriteMorph.prototype.Monitoronoff = function (sec) {
                     }
                 });
 
-                xhr.open('POST', 'http://mind-makers.appspot.com/iot/sala/comandoMMSnap', true);
+                xhr.open('POST', 'https://mind-makers.appspot.com/iot/sala/comandoMMSnap', true);
                 xhr.setRequestHeader('content-type', 'application/json');
 
                 xhr.send(data);
