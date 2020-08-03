@@ -1587,6 +1587,8 @@ SpriteMorph.prototype.comandoMM = function (data, cb) {
     Http.send(data);
 };
 
+let context = this;
+var lastm = -1;
 // SpriteMorph.prototype.Monitoronoff = function(onoff) {
 //     let comand = onoff[0] === 'on' ? 'monitoron' : 'monitoroff';
 SpriteMorph.prototype.Monitoronoff = function (sec) {
@@ -1595,145 +1597,59 @@ SpriteMorph.prototype.Monitoronoff = function (sec) {
     sec = sec < 3 ? sec = 3 : sec > 20 ? sec = 20 : sec;
     let contexto = this;
 
-    console.log('vai esperar fim para continuar?');
+    var now = +new Date();
 
-    this.getID((retorno)=>{
-        console.log('pegou id2: ',retorno);
-        if (retorno && retorno.estacao && retorno.sala && SnapCloud.username && SnapCloud.password) {
-            let data = {
-                'login': SnapCloud.username,
-                'senha': SnapCloud.password,
-                'sala': retorno.sala,
-                'estacao': retorno.estacao,
-                'comando': 'monitoroff'
-            };
-            contexto.comandoMM(JSON.stringify(data), (ret2)=>{
+    if (now - lastm > 60 * 1000) {  //60 segundos
+        lastm = now;
 
-                console.log('ret2: ',ret2);
-                console.log('dataaqui: ',data);
-                setTimeout(() => {
-
-                    if(data && data.comando){
-                        data.comando = 'monitoron';
-                        console.log('tinha data e mudou comando?: ',data);
-                        contexto.comandoMM(JSON.stringify(data), (ret3)=>{
-                            console.log('ret3: ',ret3);
-                            return ret3;
-                        });
-                    }else{
-                        console.log('não tinha data ou data.comando: ',data);
-                        return 'não tinha data ou data.comando: ';
-                    }
-
-                }, sec * 1000);
-
-                
-
-            });
-
-        } else{
-            console.log('Não tinha tudo que precisava');
-            console.log('SnapCloud.username', SnapCloud.username);
-            // console.log('SnapCloud.password',SnapCloud.password);
-            console.log('retorno.estacao ', retorno.estacao);
-            console.log('retorno.sala ', retorno.sala);
-            return 'Não tinha todos dados';
-        }
-
-
-
-        // return res;
-    });
-
-    // var this.context = this;
-    // Process.prototype.doWait(50);
-
+        this.getID((retorno)=>{
+            console.log('pegou id2: ',retorno);
+            if (retorno && retorno.estacao && retorno.sala && SnapCloud.username && SnapCloud.password) {
+                let data = {
+                    'login': SnapCloud.username,
+                    'senha': SnapCloud.password,
+                    'sala': retorno.sala,
+                    'estacao': retorno.estacao,
+                    'comando': 'monitoroff'
+                };
+                contexto.comandoMM(JSON.stringify(data), (ret2)=>{
     
-    // context.doWait(50);
-
-    // context.timeout(50);
-    // SpriteMorph.prototype.timeout(50);
-
-    // setTimeout(() => {
-    //     return 'mensagem';
-    // }, 50000);
-
+                    console.log('ret2: ',ret2);
+                    console.log('dataaqui: ',data);
+                    setTimeout(() => {
     
+                        if(data && data.comando){
+                            data.comando = 'monitoron';
+                            console.log('tinha data e mudou comando?: ',data);
+                            contexto.comandoMM(JSON.stringify(data), (ret3)=>{
+                                console.log('ret3: ',ret3);
+    
+                                return ret3;
+                            });
+                        }else{
+                            console.log('não tinha data ou data.comando: ',data);
+                            return 'não tinha data ou data.comando: ';
+                        }
+    
+                    }, sec * 1000);
 
+                });
+    
+            } else{
+                console.log('Não tinha tudo que precisava');
+                console.log('SnapCloud.username', SnapCloud.username);
+                // console.log('SnapCloud.password',SnapCloud.password);
+                console.log('retorno.estacao ', retorno.estacao);
+                console.log('retorno.sala ', retorno.sala);
+                return 'Não tinha todos dados';
+            }
 
+        });
 
-    // var Http = new XMLHttpRequest();
-    // Http.open('GET', 'http://localhost:800/id', true);
-    // Http.send();
-
-
-    // Http.addEventListener('readystatechange', function () {
-    //     if (this.readyState === this.DONE) {
-    //         let retorno = JSON.parse(Http.responseText);
-    //         // console.log('retorno; ' + JSON.stringify(retorno));
-    //         // console.log('retorno.estacao ', retorno.estacao);
-    //         // console.log('retorno.sala ', retorno.sala);
-
-    //         if (retorno && retorno.estacao && retorno.sala && SnapCloud.username && SnapCloud.password) {
-
-    //             let data = JSON.stringify({
-    //                 'login': SnapCloud.username,
-    //                 'senha': SnapCloud.password,
-    //                 'sala': retorno.sala,
-    //                 'estacao': retorno.estacao,
-    //                 'comando': 'monitoroff'
-    //             });
-
-    //             let xhr = new XMLHttpRequest();
-    //             xhr.withCredentials = null;
-
-    //             xhr.addEventListener('readystatechange', function () {
-    //                 if (this.readyState === this.DONE) {
-    //                     console.log('this.responseText aqui', this.responseText);
-                        
-
-    //                     setTimeout(() => {
-    //                         data = JSON.stringify({
-    //                             'login': SnapCloud.username,
-    //                             'senha': SnapCloud.password,
-    //                             'sala': retorno.sala,
-    //                             'estacao': retorno.estacao,
-    //                             'comando': 'monitoron'
-    //                         });
-
-    //                         var xhr2 = new XMLHttpRequest();
-    //                         xhr2.withCredentials = null;
-
-    //                         xhr2.addEventListener('readystatechange', function () {
-    //                             if (this.readyState === this.DONE) {
-    //                                 console.log('Done - monitoron');
-    //                                 console.log('this.responseText aqui2', this.responseText);
-    //                                 return setTimeout(this.responseText, sec * 1000);
-    //                             }
-    //                         });
-
-    //                         xhr2.open('POST', 'https://mind-makers.appspot.com/iot/sala/comandoMMSnap', false);
-    //                         xhr2.setRequestHeader('content-type', 'application/json');
-
-    //                         xhr2.send(data);
-
-    //                     }, sec * 1000);
-    //                 }
-    //             });
-
-    //             xhr.open('POST', 'https://mind-makers.appspot.com/iot/sala/comandoMMSnap', false);
-    //             xhr.setRequestHeader('content-type', 'application/json');
-
-    //             xhr.send(data);
-
-    //         } else {
-    //             console.log('Não tinha tudo que precisava');
-    //             console.log('SnapCloud.username', SnapCloud.username);
-    //             // console.log('SnapCloud.password',SnapCloud.password);
-    //             console.log('retorno.estacao ', retorno.estacao);
-    //             console.log('retorno.sala ', retorno.sala);
-    //         }
-    //     }
-    // });
-
+    } else {
+        console.log('too fast - ',now - lastm);
+        let res = {};
+        res.message = 'too fast';
+        return res;
+    }
 };
