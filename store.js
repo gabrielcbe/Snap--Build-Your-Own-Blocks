@@ -2668,8 +2668,16 @@ Context.prototype.toPortableXML = function (serializer) {
 
             variables.vars = copy(this.outerContext.variables.vars);
             varNames.forEach(function(name) {
-                vf = myself.outerContext.variables.silentFind(name) ||
-                    myself.receiver.variables.silentFind(name);
+                var framesToSearch = [myself.outerContext.variables];
+                if (myself.receiver) {
+                    framesToSearch.push(myself.receiver.variables);
+                }
+
+                vf = framesToSearch.reduce(
+                    (vf, potential) => vf || potential.silentFind(name),
+                    null
+                );
+
                 if (vf) {
                     variables.vars[name] = vf.vars[name];
                 }
@@ -2708,6 +2716,7 @@ Context.prototype.getPortableDependencies = function (block, visited) {
     if (visited[block.id]) {
         return dependencies;
     }
+    visited[block.id] = true;
 
     isCustomBlock = block instanceof CustomCommandBlockMorph ||
         block instanceof CustomReporterBlockMorph;
@@ -2716,17 +2725,19 @@ Context.prototype.getPortableDependencies = function (block, visited) {
         dependencies = this.getPortableDependencies(block.definition.body.expression, visited);
     }
 
-    SnapActions.traverse(block, function(block) {
+    SnapActions.traverse(block, block => {
         name = block.blockSpec;
         if (block.selector === 'reportGetVar' &&
             !dependencies.variables.includes(name)) {
             dependencies.variables.push(name);
         } else if (block.selector === 'evaluateCustomBlock' && !dependencies.customBlocks.includes(block.definition)) {
             dependencies.customBlocks.push(block.definition);
+            const nestedDeps = this.getPortableDependencies(block.definition.body.expression, visited);
+            dependencies.customBlocks.push(...nestedDeps.customBlocks);
+            dependencies.variables.push(...nestedDeps.variables);
         }
     });
 
-    visited[block.id] = true;
     return dependencies;
 };
 
